@@ -1,11 +1,17 @@
-Package: divvyCompanionExample
+Package: divvyCompanion
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Spatially Subsample Your Occurrence Data Using Radially Constrained Subsamples
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: person("Thomas", "Smith", , "tom.james.smith20@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-2083-7452"))
+Maintainer: Thomas Smith <tom.james.smith20@gmail.com>
+Description: This package hosts a modified version of the divvy package's "cookies" function, which affords users a greater variety of rarefaction methods to choose from and the ability to choose which geographic regions should be sampled. 
+License: GPL
 Encoding: UTF-8
 LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+URL: https://github.com/PalaeoTom/divvyCompanion.git
+Imports: terra, divvy
+Depends: 
+    R (>= 4.4)
