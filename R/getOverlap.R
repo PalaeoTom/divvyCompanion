@@ -7,7 +7,6 @@
 #' @noRd
 #'
 #' @return D
-#' @export
 #'
 #' @examples
 #' print("example")

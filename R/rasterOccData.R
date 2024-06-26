@@ -20,7 +20,7 @@ rasteriseOccData <- function(occData, res, xyCoords1 = NULL, xyCoords2 = NULL, o
     rWorld <- terra::rast()
     ## define resolution and coordinate system of raster
     rPrj <- terra::project(x = rWorld, y = raster.crs, res = res)
-    values(rPrj) <- 1:terra::ncell(rPrj)
+    terra::values(rPrj) <- 1:terra::ncell(rPrj)
     ## convert occurrence data to spatVector
     llOccs <- terra::vect(occData, geom = xyCoords, crs = occData.crs)
     ## change to new coordinate reference system
@@ -37,7 +37,7 @@ rasteriseOccData <- function(occData, res, xyCoords1 = NULL, xyCoords2 = NULL, o
       rWorld <- terra::rast()
       ## define resolution and coordinate system of raster
       rPrj <- terra::project(x = rWorld, y = raster.crs, res = res)
-      values(rPrj) <- 1:terra::ncell(rPrj)
+      terra::values(rPrj) <- 1:terra::ncell(rPrj)
       ## create mock matrix
       seedMatrix <- as.data.frame(matrix("seed", ncol = ncol(occData), nrow = length(xyCoords1)))
       colnames(seedMatrix) <- colnames(occData)

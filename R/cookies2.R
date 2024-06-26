@@ -41,7 +41,7 @@ cookies2 <- function(dataMat, xy, r, seeding = NULL, rarefaction = "divvySites",
   }
   seeds <- names(allPools)
   if(rarefaction == "divvySites" || rarefaction == "weightedDivvySites"){
-    subsamples <- replicate(repSites, cookie2(dataMat, seeds, xy, nSites, allPools, weight, coords, crs, output, divvyRarefaction = T, returnSeeds), simplify = FALSE)
+    subsamples <- replicate(reps, cookie2(dataMat, seeds, xy, nSites, allPools, weight, coords, crs, output, divvyRarefaction = T, returnSeeds), simplify = FALSE)
     if(returnSeeds){
       usedSeeds <- sapply(1:length(subsamples), function(x) subsamples[[x]][[1]])
       seed_out <- coords[which(coords$id %in% usedSeeds),]
