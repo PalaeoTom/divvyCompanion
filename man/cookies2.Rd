@@ -22,39 +22,74 @@ cookies2(
 )
 }
 \arguments{
-\item{dataMat}{D}
+\item{dataMat}{A data.frame or matrix containing taxon names, Cartesian coordinates, and any associated variables.}
 
-\item{xy}{D}
+\item{xy}{A vector of two elements, specifying the name or numeric position of columns in \code{dataMat} containing Cartesian coordinates, e.g. longitude and latitude. Coordinates for any shared sampling sites should be identical, and where sites are raster cells, coordinates are usually expected to be cell centroids.}
 
-\item{r}{D}
+\item{r}{A numeric value specifying the radius (in metres) to use to define radially constrained regions.}
 
-\item{seeding}{D}
+\item{seeding}{Either \code{NULL} (the default) or a matrix generated using \code{\link[=rasterOccData]{rasterOccData()}} function, specifying the location of the centroids to be used to define radially constrained regions. If \code{NULL}, each unique populated site within \code{dataMat} will be assessed for viability as the center of a radially constrained region.}
 
-\item{rarefaction}{D}
+\item{rarefaction}{A character string specifying the subsampling method to be used, if any. Options are \code{"divvySites"} (the default, equivalent to \code{\link[divvy:cookies]{divvy::cookies()}} with \code{weight = FALSE}), \code{"weightedDivvySites"} (equivalent to \code{\link[divvy:cookies]{divvy::cookies()}} with \code{weight = TRUE}), \code{"sites"}, \code{"occs"}, \code{"sitesThenOccs"}, and \code{"none"}. See below for further details.}
 
-\item{reps}{D}
+\item{reps}{A numeric value specifying the number of subsamples to be drawn from each radially constrained region if \code{rarefaction = "divvySites"}, \code{"weightedDivvySites"}, \code{"sites"}, \code{"occs"}, or \code{"sitesThenOccs"}. Default is \code{100}.}
 
-\item{nSites}{D}
+\item{nSites}{A numeric value specifying the minimum number of unique populated sites that must fall within a radially constrained region for it to be considered viable. Also, specifies the number of sites that are randomly drawn with replacement from each radially constrained region if \code{rarefaction = "sites"} or \code{"sitesThenOccs"}. Default is \code{3}.}
 
-\item{nOccs}{D}
+\item{nOccs}{A numeric value specifying the number of occurrences to be randomly drawn with replacement from each radially constrained region if \code{rarefaction = "occs"} or \code{"sitesThenOccs"}. Default is \code{100}.}
 
-\item{oThreshold}{D}
+\item{oThreshold}{A numeric value between \code{0} and \code{1}, specifying the acceptable proportion of overlap in sites or area between viable radially constrained regions. Default is 0 (i.e., all subsamples returned will be spatially independent). Set to 1 to have function behave like \code{\link[divvy:cookies]{divvy::cookies()}}.}
 
-\item{oType}{D}
+\item{oType}{A character string, either \code{"sites"} (the default) or \code{"area"}. If \code{oThreshold < 1}, \code{oType} specifies whether the degree of overlap between radially constrained regions should be quantified using sites (\code{oType = "sites"}) or area (\code{oType = "area"}).}
 
-\item{oPruningMode}{D}
+\item{oPruningMode}{A character string, either \code{"maxOccs"} (the default) or \code{"minOverlap"}. If \code{oThreshold < 1}, \code{oPruningMode} specifies whether the overlapping radially constrained regions with the least associated occurrence data (\code{oPruningMode = "maxOccs"}) or the most overlap with other regions (\code{oPruningMode = "minOverlap"}) should be dropped. In practice, the former results in fewer, more richly radially constrained regions being retained, whereas the latter results in a greater number of less richly populated regions.}
 
-\item{returnSeeds}{D}
+\item{returnSeeds}{\code{TRUE} or \code{FALSE} (the default). If \code{TRUE}, the output of this function is nested within a list that includes a second element containing the coordinates of the centroids of each radially constrained region represented in the other element of the output.}
 
-\item{crs}{D}
+\item{crs}{A character string specifying a coordinate reference system (CRS). You can use the following formats to define coordinate reference systems: WKT, PROJ.4 (e.g., \code{crs = +proj=longlat +datum=WGS84}), or an EPSG code (e.g., \code{crs = "EPSG:4326"}). But note that the PROJ.4 notation has been deprecated, and you can only use it with the WGS84/NAD83 and NAD27 datums. Other datums are silently ignored. Default is \code{"EPSG:4326"}.}
 
-\item{output}{D}
+\item{output}{A character string, either \code{"full"} or \code{"locs"}. Specifies whether the returned data should be two columns of subsample site coordinates (\code{output = "locs"}) or the subset of rows from dataMat associated with those coordinates (\code{output = "full"}).}
 }
 \value{
-D
+Output format changes depending on arguments used.
+If \code{returnSeeds = FALSE} and:
+\itemize{
+\item \code{rarefaction = "none"}: a list of length \emph{n}, where \emph{n} is the number of radially constrained regions identified as viable. Each element is a data.frame or matrix (matching the class of \code{dataMat}) containing \emph{k} rows, where \emph{k} is the number of occurrences within dataMat that fall within a specific radially constrained region.
+\item \code{rarefaction = "divvySites"} or \code{"weightedDivvySites"}: a list of length reps. Each element is a data.frame or matrix (matching the class of \code{dataMat}) with \emph{l} rows, where \emph{l} is the number of occurrences associated with \code{nSites} sites within a viable radially constrained region. The radially constrained region of origin for each subsample is chosen at random. If \code{rarefaction = "weightedDivvySites"}, the first row in each returned subsample data.frame corresponds to the seed point (i.e., the centroid of the radially constrained region). If \code{rarefaction = "divvySites"}, rows are listed in the random order of which they were drawn.
+\item \code{rarefaction = "sites"}, \code{"occs"}, or \code{"sitesThenOccs"}: a list of length \emph{n}, where \emph{n} is the number of radially constrained regions identified as viable. Each element is a list of length \code{reps}, each element of which is a data.frame or matrix (matching the class of dataMat). The dimensions of these data.frames/matrices depend on the rarefaction method used:
+\itemize{
+\item if \code{rarefaction = "sites"}, each data.frame/matrix will have \emph{l} rows, where \emph{l} is the number of occurrences associated with \code{nSites} sites within a viable radially constrained region.
+\item if \code{rarefaction = "occs"}, each data.frame/matrix will have \code{nOccs} rows, where \code{nOccs} is a random sampling of the occurrences associated with a viable radially constrained region.
+\item if \code{rarefaction = "sitesThenOccs"}, each data.frame/matrix will have \code{nOccs} rows, where \code{nOccs} is a random sampling of the occurrences associated with \code{nSites} randomly selected sites within a viable radially constrained region.
+}
+}
+
+If \code{returnSeeds = TRUE}: a list with two elements, where the second is main output of the function specified using argument \code{rarefaction}. The first element is a data.frame or matrix (matching the class of \code{dataMat}) containing the rows used as seed points for the radially constrained regions.
+
+If \code{output = 'locs'} (default), only the coordinates of the \code{dataMat} rows associated with radially constrained regions/subsamples are returned. If \code{output = 'full'}, all \code{dataMat} columns are returned for the rows associated with the radially constrained region/subsample.
 }
 \description{
-Derive radially constrained spatial subsamples from occurrence data
+This function is an expanded version of \code{\link[divvy:cookies]{divvy::cookies()}}.
+
+In brief, the function takes a single location as a starting (seed) point, circumscribes a circular buffer of \code{r} metres around it, and then identifies which observations fall within this circle. This process is repeated for each unique site in the dataset (unless these seed points are manually specified). The radially constrained regions (RCRs) that result are then assessed against user-specified criteria; if they contain insufficient data (measured by the number of unique populated sites they contain) and/or overlap with other RCRs by more than is deemed acceptable, they are dropped from the analysis. Those that are retained are then either returned in full (i.e., all occurrences that fall within them are returned) or subsampled.
+
+This version of the function differs from the original version in three key ways:
+\enumerate{
+\item Implements three new subsampling procedures inspired by classical occurrence rarefaction.
+\item Offers users ability to limit or eliminate overlap between spatial subsamples.
+\item Allows users to explore viability of specific regions for spatial subsampling through manual seeding.
+}
+
+It also allows users to wrap the output of the function in a list which includes the seed points used to derive the sampled RCRs.
+
+For explanations of how the subsampling procedures used when \code{rarefaction = "divvySites"} or \code{"weightedDivvySites"}, see \code{\link[divvy:cookies]{divvy::cookies()}} documentation.
+
+The three new subsampling procedures are described below. Each of them differ from the two subsampling procedures offered by \code{\link[divvy:cookies]{divvy::cookies()}} in that they draw the \code{reps} subsamples from each viable RCR, rather than randomly drawing \code{reps} subsamples from \code{reps} randomly selected viable RCRs. When used in conjunction with a low threshold for overlap (i.e., \code{oThreshold = 0}), this limits oversampling of occurrence-rich geographic areas.
+\enumerate{
+\item \code{rarefaction = "sites"}: draws \code{nSites} sites randomly with replacement from each RCR. Each subsample contains all occurrences associated with the RCR.
+\item \code{rarefaction = "occs"}: draws \code{nOccs} occurrences randomly with replacement from each RCR. Each subsample contains \code{nOccs} occurrences drawn from all sites within the RCR.
+\item \code{rarefaction = "sitesThenOccs"}: draws \code{nSites} sites randomly with replacement from each RCR, then draws \code{nOccs} occurrences from the occurrences associated with selected sites. Each subsample contains \code{nOccs} occurrences drawn from \code{nSites} sites within the RCR.
+}
 }
 \examples{
 print("example")

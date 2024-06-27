@@ -1,18 +1,6 @@
 #' Find the other populated cells that fall within a circle centered on a cell.
 #'
-#' @param seedRow D
-#' @param datSV D
-#' @param sites D
-#' @param xy D
-#' @param r D
-#' @param crs D
-#'
 #' @noRd
-#'
-#' @return D
-#'
-#' @examples
-#' print("example")
 findPool2 <- function (seedRow, datSV, sites, xy, r, crs = "EPSG:4326"){
   seedpt <- datSV[seedRow, ]
   buf <- terra::buffer(seedpt, width = r)

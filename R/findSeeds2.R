@@ -1,23 +1,6 @@
 #' Find radially constrained spatial subsamples that fulfil all specified criteria
 #'
-#' @param dat D
-#' @param rawData D
-#' @param siteId D
-#' @param xy D
-#' @param r D
-#' @param nSite D
-#' @param crs D
-#' @param oThreshold D
-#' @param oType D
-#' @param oPruningMode D
-#' @param seeding D
-#'
 #' @noRd
-#'
-#' @return D
-#'
-#' @examples
-#' print("example")
 findSeeds2 <- function(dat, rawData, siteId, xy, r, nSite, crs = "EPSG:4326", oThreshold = 0, oType = "sites", oPruningMode = "maxOccs", seeding = NULL){
   if(is.null(seeding)){
     sites <- dat[, siteId]

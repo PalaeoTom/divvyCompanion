@@ -1,23 +1,6 @@
 #' Modified version of divvy internal function "cookie"
 #'
-#' @param dat D
-#' @param seeds D
-#' @param xy D
-#' @param nSite D
-#' @param allPools D
-#' @param weight D
-#' @param coords D
-#' @param crs D
-#' @param output D
-#' @param divvyRarefaction D
-#' @param returnSeeds D
-#'
 #' @noRd
-#'
-#' @return D
-#'
-#' @examples
-#' print("example")
 cookie2 <- function(dat, seeds, xy, nSite, allPools, weight, coords, crs, output, divvyRarefaction, returnSeeds) {
   if(divvyRarefaction){
     if(length(seeds) > 1) {

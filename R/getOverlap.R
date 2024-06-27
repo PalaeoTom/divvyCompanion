@@ -1,15 +1,6 @@
 #' Efficient calculation of percentage of areas of two identical circles that overlap, given their radii, their distance between them, and their circumference
 #'
-#' @param d D
-#' @param r D
-#' @param a D
-#'
 #' @noRd
-#'
-#' @return D
-#'
-#' @examples
-#' print("example")
 getOverlap <- function(d, r, a){
   if(d >= (2*r)){
     o <- 0

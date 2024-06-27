@@ -14,7 +14,7 @@
 #'
 #' @examples
 #' print("example")
-rasteriseOccData <- function(occData, res, xyCoords1 = NULL, xyCoords2 = NULL, occData.crs = 'EPSG:4326', raster.crs = 'EPSG:8857', xyCoords = c('paleolng','paleolat'), xyCell = c('cellX','cellY')){
+rasterOccData <- function(occData, res, xyCoords1 = NULL, xyCoords2 = NULL, occData.crs = 'EPSG:4326', raster.crs = 'EPSG:8857', xyCoords = c('paleolng','paleolat'), xyCell = c('cellX','cellY')){
   if(is.null(xyCoords1) && is.null(xyCoords2)){
     ## initialise
     rWorld <- terra::rast()
