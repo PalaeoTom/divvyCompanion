@@ -1,7 +1,7 @@
 #' Find radially constrained spatial subsamples that fulfil all specified criteria
 #'
 #' @noRd
-findSeeds2 <- function(dat, rawData, siteId, xy, r, nSite, crs = "EPSG:4326", oThreshold = 0, oType = "sites", oPruningMode = "maxOccs", seeding = NULL){
+findSeeds2 <- function(dat, rawData, siteId, xy, uniqID, r, nSite, crs = "EPSG:4326", oThreshold = 0, oType = "sites", oPruningMode = "maxOccs", seeding = NULL){
   if(is.null(seeding)){
     sites <- dat[, siteId]
     datSV <- terra::vect(dat, geom = xy, crs = crs)
@@ -89,7 +89,7 @@ findSeeds2 <- function(dat, rawData, siteId, xy, r, nSite, crs = "EPSG:4326", oT
         if(oPruningMode == "maxOccs"){
           ## initialise droppers vector, get number of occurrences for each potential circular subsample
           droppers <- c()
-          posPools.occs <- sapply(1:length(posPools), function(x) nrow(rawData[which(rawData[,"cell"] %in% dat[which(dat[,siteId] %in% posPools[[x]]),"cell"]),]))
+          posPools.occs <- sapply(1:length(posPools), function(x) nrow(rawData[which(rawData[,uniqID] %in% dat[which(dat[,siteId] %in% posPools[[x]]),uniqID]),]))
           ## Now loop
           while(T){
             ## get each posPool element that overlaps with at least one other element

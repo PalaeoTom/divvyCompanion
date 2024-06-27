@@ -1,7 +1,8 @@
 #' Derive radially constrained spatial subsamples from occurrence data
 #'
 #' @param dataMat A data.frame or matrix containing taxon names, Cartesian coordinates, and any associated variables.
-#' @param xy 	A vector of two elements, specifying the name or numeric position of columns in `dataMat` containing Cartesian coordinates, e.g. longitude and latitude. Coordinates for any shared sampling sites should be identical, and where sites are raster cells, coordinates are usually expected to be cell centroids.
+#' @param xy 	A vector of two elements, specifying the name of columns in `dataMat` containing Cartesian coordinates, e.g. longitude and latitude. Coordinates for any shared sampling sites should be identical, and where sites are raster cells, coordinates are usually expected to be cell centroids.
+#' @param uniqID A character string specifying the name of the column in `dataMat` containing unique site identifiers (e.g., cell numbers added via [rasterOccData()]). Default is `"cell"`.
 #' @param r A numeric value specifying the radius (in metres) to use to define radially constrained regions.
 #' @param seeding Either `NULL` (the default) or a matrix generated using [rasterOccData()] function, specifying the location of the centroids to be used to define radially constrained regions. If `NULL`, each unique populated site within `dataMat` will be assessed for viability as the center of a radially constrained region.
 #' @param rarefaction A character string specifying the subsampling method to be used, if any. Options are `"divvySites"` (the default, equivalent to [divvy::cookies()] with `weight = FALSE`), `"weightedDivvySites"` (equivalent to [divvy::cookies()] with `weight = TRUE`), `"sites"`, `"occs"`, `"sitesThenOccs"`, and `"none"`. See below for further details.
@@ -10,9 +11,9 @@
 #' @param nOccs A numeric value specifying the number of occurrences to be randomly drawn with replacement from each radially constrained region if `rarefaction = "occs"` or `"sitesThenOccs"`. Default is `100`.
 #' @param oThreshold A numeric value between `0` and `1`, specifying the acceptable proportion of overlap in sites or area between viable radially constrained regions. Default is 0 (i.e., all subsamples returned will be spatially independent). Set to 1 to have function behave like [divvy::cookies()].
 #' @param oType A character string, either `"sites"` (the default) or `"area"`. If `oThreshold < 1`, `oType` specifies whether the degree of overlap between radially constrained regions should be quantified using sites (`oType = "sites"`) or area (`oType = "area"`).
-#' @param oPruningMode A character string, either `"maxOccs"` (the default) or `"minOverlap"`. If `oThreshold < 1`, `oPruningMode` specifies whether the overlapping radially constrained regions with the least associated occurrence data (`oPruningMode = "maxOccs"`) or the most overlap with other regions (`oPruningMode = "minOverlap"`) should be dropped. In practice, the former results in fewer, more richly radially constrained regions being retained, whereas the latter results in a greater number of less richly populated regions.
+#' @param oPruningMode A character string, either `"maxOccs"` (the default) or `"minOverlap"`. If `oThreshold < 1`, `oPruningMode` specifies whether the overlapping radially constrained regions with the least associated occurrence data (`oPruningMode = "maxOccs"`) or the most overlap with other regions (`oPruningMode = "minOverlap"`) should be dropped.
 #' @param returnSeeds `TRUE` or `FALSE` (the default). If `TRUE`, the output of this function is nested within a list that includes a second element containing the coordinates of the centroids of each radially constrained region represented in the other element of the output.
-#' @param crs A character string specifying a coordinate reference system (CRS). You can use the following formats to define coordinate reference systems: WKT, PROJ.4 (e.g., `crs = +proj=longlat +datum=WGS84`), or an EPSG code (e.g., `crs = "EPSG:4326"`). But note that the PROJ.4 notation has been deprecated, and you can only use it with the WGS84/NAD83 and NAD27 datums. Other datums are silently ignored. Default is `"EPSG:4326"`.
+#' @param crs A character string specifying a coordinate reference system (CRS). You can use the following formats to define coordinate reference systems: WKT, PROJ.4 (e.g., `crs = +proj=longlat +datum=WGS84`), or an EPSG code (e.g., `crs = "EPSG:4326"`). But note that the PROJ.4 notation has been deprecated, and you can only use it with the WGS84/NAD83 and NAD27 datums. Other datums are silently ignored. Default is `"EPSG:8857"`.
 #' @param output A character string, either `"full"` or `"locs"`. Specifies whether the returned data should be two columns of subsample site coordinates (`output = "locs"`) or the subset of rows from dataMat associated with those coordinates (`output = "full"`).
 #'
 #' @return Output format changes depending on arguments used.
@@ -37,13 +38,20 @@
 #' This version of the function differs from the original version in four key ways:
 #' 1. Offers users ability to limit or eliminate overlap between spatial subsamples.
 #' 2. Allows users to explore viability of specific regions for spatial subsampling through manual seeding.
-#' 3. Allows users to assess how different values for `r`, `nSites`, and `oThreshold` affect number of viable RCRs through option to return them without subsampling.
+#' 3. Allows users to assess how changing values of `r`, `nSites`, and `oThreshold` affects the number of viable RCRs through the new option to return them without subsampling.
 #' 4. Implements new subsampling procedures inspired by classical occurrence rarefaction.
 #'
-#' This version of the function also allows users to wrap the output of the function in a list which includes the seed points used to derive the sampled RCRs.
+#' It also allows users to wrap the output of the function in a list which includes the seed points used to derive the sampled RCRs.
 #'
+#' # Overlap elimination #
+#' The ability to control the amount of overlap between RCRs was added so as to give users the ability to eliminate pseudoreplication of spatial regions and standardise the sampling of different geographic areas. The latter is useful when the function is applied to global fossil occurrence datasets, as it curbs the impact of some geographic areas having an order of magnitude more occurrence data associated with them than others (e.g., the oversampling of Western European and North American localities relative to other parts of the world). Currently, the degree of overlap between two RCRs is quantified either as the proportion of sites within an RCR that fall within another (`oType = "sites"`) or the the proportion of the geographic area of an RCR that is included with another (`oType = "area"`). The former is the recommended option and the default.
 #'
+#' The function offers two methods for iteratively selecting and removing RCRs until those that remain do not exceed the overlap threshold (`oThreshold`): `oPruningMode = "maxOccs"` specifies that the overlapping RCRs with the least associated occurrence data should be the first to be removed, whereas `oPruningMode = "minOverlap"` specifies that the RCRs that overlap the most with other regions should be dropped first. Ties are decided randomly. In practice, the former results in fewer, more richly radially constrained regions being retained, whereas the latter results in a greater number of less richly populated regions. The latter also has a habit of returning RCRs that are centered on the boundaries of densely populated geographic regions.
 #'
+#' # Manual seeding and raw radially constrained region outputs #
+#' These functionalities were added to give the function greater exploratory utility. Now users can repeatedly sample the same regions using different radii (`r`) and site minima (`nSites`) to determine optimum values for data sampling.
+#'
+#' # Subsampling procedures #
 #' For explanations of how the subsampling procedures used when `rarefaction = "divvySites"` or `"weightedDivvySites"`, see [divvy::cookies()] documentation.
 #'
 #' The three new subsampling procedures are described below. Each of them differ from the two subsampling procedures offered by [divvy::cookies()] in that they draw the `reps` subsamples from each viable RCR, rather than randomly drawing `reps` subsamples from `reps` randomly selected viable RCRs. When used in conjunction with a low threshold for overlap (i.e., `oThreshold = 0`), this limits oversampling of occurrence-rich geographic areas.
@@ -52,10 +60,36 @@
 #' 3. `rarefaction = "sitesThenOccs"`: draws `nSites` sites randomly with replacement from each RCR, then draws `nOccs` occurrences from the occurrences associated with selected sites. Each subsample contains `nOccs` occurrences drawn from `nSites` sites within the RCR.
 #'
 #' @examples
-#' print("example")
-cookies2 <- function(dataMat, xy, r, seeding = NULL, rarefaction = "divvySites", reps = 100, nSites = 3, nOccs = 100,
+#' # Two examples, first with non-rasterised data
+#' # Get 10 data points
+#' n <- 10
+#'
+#' # 10 sets of x and y coordinates
+#' x <- seq(from = 150, to = 155, length.out = n)
+#' y <- seq(from = -10, to = -20, length.out = n)
+#'
+#' # Give each site a unique identifier
+#' z <- seq(1, n, 1)
+#'
+#' # Combine into data frame and label columns
+#' pts <- data.frame(x, y, z)
+#' colnames(pts) <- c("x", "y", "z")
+#'
+#' # Derive subsamples
+#' subsamples <- cookies2(dataMat = pts, uniqID = "z",
+#' xy = c("x", "y"), reps = 5, nSites = 3, r = 200000)
+#'
+#' # Now let's try rasterising, then subsampling
+#' raster <- rasterOccData(pts, res = 200000,
+#' xyCoords = c("x", "y"), xyCell = c("cellX", "cellY"),
+#' uniqID = "cell")
+#'
+#' # sample 5 sets of 3 occurrences within 200km radius
+#' raster.subsamples <- cookies2(dataMat = raster, uniqID = "cell",
+#' xy = c("cellX", "cellY"), reps = 5, nSites = 3, r = 200000)
+cookies2 <- function(dataMat, xy, uniqID = "cell", r, seeding = NULL, rarefaction = "divvySites", reps = 100, nSites = 3, nOccs = 100,
                      oThreshold = 0, oType = "sites", oPruningMode = "maxOccs",
-                     returnSeeds = F, crs = "EPSG:4326", output = "locs"){
+                     returnSeeds = F, crs = "EPSG:8857", output = "locs"){
   ## If rarefaction = "weightedDivvy", set argument
   if(rarefaction == "weightedDivvySites"){
     weight <- T
@@ -65,9 +99,9 @@ cookies2 <- function(dataMat, xy, r, seeding = NULL, rarefaction = "divvySites",
   coords <- divvy::uniqify(dataMat, xy)
   coords$id <- paste0("loc", 1:nrow(coords))
   if(is.null(seeding)){
-    allPools <- findSeeds2(coords, dataMat, "id", xy, r, nSites, crs, oThreshold, oType, oPruningMode)
+    allPools <- findSeeds2(coords, dataMat, "id", xy, uniqID, r, nSites, crs, oThreshold, oType, oPruningMode)
   } else {
-    allPools <- findSeeds2(coords, dataMat, "id", xy, r, nSites, crs, oThreshold, oType, oPruningMode, seeding)
+    allPools <- findSeeds2(coords, dataMat, "id", xy, uniqID, r, nSites, crs, oThreshold, oType, oPruningMode, seeding)
   }
   if (length(allPools) < 1) {
     stop("not enough close sites for any subsample or all cookies exceed overlap oThreshold. Please adjust nSites or oThreshold.")
@@ -92,13 +126,13 @@ cookies2 <- function(dataMat, xy, r, seeding = NULL, rarefaction = "divvySites",
       if(rarefaction == "sites"){
         rareSubs <- lapply(1:length(subsamples), function(x){
           ## Get list of unique cells
-          cells <- unique(subsamples[[x]][,"cell"])
+          cells <- unique(subsamples[[x]][,uniqID])
           ## Get reps samples
           sub2samples <- lapply(1:reps, function(all){
             ## Get sample of cells
             samp <- sample(cells, size = nSites, replace = T)
             ## extract data frame
-            s2sample <- subsamples[[x]][which(subsamples[[x]][,"cell"] %in% samp),]
+            s2sample <- subsamples[[x]][which(subsamples[[x]][,uniqID] %in% samp),]
           })
         })
         ## prepare output
@@ -134,13 +168,13 @@ cookies2 <- function(dataMat, xy, r, seeding = NULL, rarefaction = "divvySites",
       if(rarefaction == "sitesThenOccs"){
         rareSubs <- lapply(1:length(subsamples), function(x){
           ## Get list of unique cells
-          cells <- unique(subsamples[[x]][,"cell"])
+          cells <- unique(subsamples[[x]][,uniqID])
           ## Get repOccs samples
           sub2samples <- lapply(1:reps, function(all){
             ## Get sample of cells
             sampCells <- sample(cells, size = nSites, replace = T)
             ## Get occurrences with these cells
-            sampCellOccs <- which(subsamples[[x]][,"cell"] %in% sampCells)
+            sampCellOccs <- which(subsamples[[x]][,uniqID] %in% sampCells)
             ## Get sample of occurrences
             sampOccs <- sample(sampCellOccs, size = nOccs, replace = T)
             ## extract data frame

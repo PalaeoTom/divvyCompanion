@@ -12,7 +12,8 @@ rasterOccData(
   occData.crs = "EPSG:4326",
   raster.crs = "EPSG:8857",
   xyCoords = c("paleolng", "paleolat"),
-  xyCell = c("cellX", "cellY")
+  xyCell = c("cellX", "cellY"),
+  uniqID = "cell"
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ rasterOccData(
 \item{xyCoords}{D}
 
 \item{xyCell}{D}
+
+\item{uniqID}{D}
 }
 \value{
 D

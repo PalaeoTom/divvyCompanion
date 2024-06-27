@@ -8,13 +8,14 @@
 #' @param raster.crs D
 #' @param xyCoords D
 #' @param xyCell D
+#' @param uniqID D
 #'
 #' @return D
 #' @export
 #'
 #' @examples
 #' print("example")
-rasterOccData <- function(occData, res, xyCoords1 = NULL, xyCoords2 = NULL, occData.crs = 'EPSG:4326', raster.crs = 'EPSG:8857', xyCoords = c('paleolng','paleolat'), xyCell = c('cellX','cellY')){
+rasterOccData <- function(occData, res, xyCoords1 = NULL, xyCoords2 = NULL, occData.crs = 'EPSG:4326', raster.crs = 'EPSG:8857', xyCoords = c('paleolng','paleolat'), xyCell = c('cellX','cellY'), uniqID = "cell"){
   if(is.null(xyCoords1) && is.null(xyCoords2)){
     ## initialise
     rWorld <- terra::rast()
@@ -26,7 +27,7 @@ rasterOccData <- function(occData, res, xyCoords1 = NULL, xyCoords2 = NULL, occD
     ## change to new coordinate reference system
     prjOccs <- terra::project(llOccs, raster.crs)
     ## get cell numbers for each occurrence
-    occData$cell <- terra::cells(rPrj, prjOccs)[,'cell']
+    occData[, uniqID] <- terra::cells(rPrj, prjOccs)[,"cell"]
     ## get coordinates of each cell
     occData[, xyCell] <- terra::xyFromCell(rPrj, occData$cell)
     ## return rasterised occurrence data
@@ -48,7 +49,7 @@ rasterOccData <- function(occData, res, xyCoords1 = NULL, xyCoords2 = NULL, occD
       ## change to desired coordinate system
       prjOccs <- terra::project(llOccs, raster.crs)
       ## get cell numbers
-      seedMatrix$cell <- terra::cells(rPrj, prjOccs)[,'cell']
+      seedMatrix[, uniqID] <- terra::cells(rPrj, prjOccs)[,"cell"]
       ## get coordinates for each cell
       seedMatrix[, xyCell] <- terra::xyFromCell(rPrj, seedMatrix$cell)
       ## create id column
