@@ -17,30 +17,75 @@ rasterOccData(
 )
 }
 \arguments{
-\item{occData}{D}
+\item{occData}{A data.frame or matrix containing taxon names, Cartesian coordinates, and any associated variables. All columns should be labelled.}
 
-\item{res}{D}
+\item{res}{A numeric value specifying the resolution (in metres) of the output raster.}
 
-\item{xyCoords1}{D}
+\item{xyCoords1}{Either \code{NULL} (the default) or a numeric vector specifying the first Cartesian coordinate(s) of the centroid(s) of the radially defined region(s) you wish to sample using \code{\link[=cookies2]{cookies2()}}. Vector should be same length as that submitted for \code{xyCoords2}. Coordinates should use coordinate reference system specified using \code{occData.crs}.}
 
-\item{xyCoords2}{D}
+\item{xyCoords2}{Either \code{NULL} (the default) or a numeric vector specifying the second Cartesian coordinate(s) of the centroid(s) of the radially defined region(s) you wish to sample using \code{\link[=cookies2]{cookies2()}}. Vector should be same length as that submitted for \code{xyCoords1}. Coordinates should use coordinate reference system specified using \code{occData.crs}.}
 
-\item{occData.crs}{D}
+\item{occData.crs}{A character string specifying the coordinate reference system (CRS) of either the coordinates specified in columns \code{xyCoords} of \code{occData} (if \code{xyCoords1} and \code{xyCoords2} are null) or the coordinates submitted as numeric vectors to \code{xyCoords1} and \code{xyCoords2} (if you are defining a seed matrix). Default is \code{"EPSG:4326"}.}
 
-\item{raster.crs}{D}
+\item{raster.crs}{A character string specifying the coordinate reference system (CRS) to be used to rasterise \code{occData} (if \code{xyCoords1} and \code{xyCoords2} are null) or the coordinates submitted as numeric vectors to \code{xyCoords1} and \code{xyCoords2} (if you are defining a seed matrix). Default is \code{"EPSG:8857"}.}
 
-\item{xyCoords}{D}
+\item{xyCoords}{A character vector with two elements, specifying the names of columns in \code{occData} containing Cartesian coordinates or the names to be used for the coordinates submitted as numeric vectors to \code{xyCoords1} and \code{xyCoords2} (if you are defining a seed matrix). Default is \code{xyCoords = c('paleolng','paleolat')}.}
 
-\item{xyCell}{D}
+\item{xyCell}{A character vector with two elements, specifying the names that should be given to the columns in the output containing the grid cell centroid coordinates. Note, occurrences (i.e., rows in \code{occData} or the seed points specified as numeric vectors via \code{xyCoords1} and \code{xyCoords2}) that fall within the same grid cell will have identical values for columns \code{xyCell} in the output. Default is \code{xyCell = c('cellX','cellY')}.}
 
-\item{uniqID}{D}
+\item{uniqID}{A character string, specifying the name to be given to the column in the output containing the unique identifying number for each cell. Note, occurrences (i.e., rows in \code{occData} or the seed points specified as numeric vectors via \code{xyCoords1} and \code{xyCoords2}) that fall within the same grid cell will have identical values for column \code{uniqID} in the output. Default is \verb{uniqID = "cell}. Cannot match other column names provided or \code{"id"} (the latter is applied when generating a seed matrix).}
 }
 \value{
-D
+A data frame or matrix (matching the class of \code{occData}).
+
+If \code{xyCoords1} and \code{xyCoords2} are null, a rasterised version of \code{occData} will be returned with \emph{r} rows and at least \emph{c} columns, where \emph{r} is the number of rows in \code{occData} and \emph{c} is the number of columns in \code{occData}. If not already present in \code{occData}, columns named \code{xyCell} and \code{uniqID} will be added. If they are present, they will be overwritten.
+
+If \code{xyCoords1} and \code{xyCoords2} are numeric vectors, a seed matrix will be returned with \emph{l} rows and at least \emph{c} columns, where \emph{l} is the length of vector \code{xyCoords1} (this should match length of \code{xyCoords2}) and \emph{c} is the number of columns in \code{occData}. If not already present in \code{occData}, columns named \code{xyCoords}, \code{xyCell}, \code{uniqID}, and \code{"id"} (a column denoting the rows as manually defined seed points) will be added.
 }
 \description{
-Rasterise occurrence data and create seed matrix for cookies2
+This is a wrapper function that employs \link{terra} functions to rasterise occurrence data and define rasterised seed points for use with \code{\link[=cookies2]{cookies2()}} (via argument \code{seeding}).
+
+If defining a seed matrix, it is \emph{highly recommended} that you first rasterise your occurrence data using this function, then submit the rasterised occurrence data as \code{occData}, \emph{keeping all other arguments the same}, when defining your seed points \strong{as this will ensure the coordinates of your seeds are assigned to the same columns as the coordinates of your occurrences} .
+
+You can use the following formats to define coordinate reference systems: WKT, PROJ.4 (e.g., \code{crs = +proj=longlat +datum=WGS84}), or an EPSG code (e.g., \code{crs = "EPSG:4326"}). But note that the PROJ.4 notation has been deprecated, and you can only use it with the WGS84/NAD83 and NAD27 datums. Other datums are silently ignored.
 }
 \examples{
-print("example")
+# Get 50 data points
+n <- 50
+
+# 50 sets of x and y coordinates (coordinate reference system: 'EPSG:4326')
+x <- seq(from = 180, to = 150, length.out = n)
+y <- seq(from = 0, to = -30, length.out = n)
+
+# Combine into data frame and label columns
+pts <- data.frame(x, y)
+colnames(pts) <- c("x", "y")
+
+# Rasterise (cell coordinate reference system 'EPSG:8857' by default)
+# using 200km grid cells
+raster <- rasterOccData(occData = pts, res = 100000,
+xyCoords = c("x", "y"),
+xyCell = c("cellX", "cellY"), uniqID = "cell")
+
+# How many viable radially constrained regions do we have if we use
+# 200km radii, require a minimum of 2 grid cells,
+# and demand no overlap in sites? Let's find out.
+standard.seeding <- cookies2(dataMat = raster, returnSeeds = TRUE,
+rarefaction = "none", seeding = NULL, uniqID = "cell",
+xy = c("cellX", "cellY"), nSites = 2, r = 200000,
+oThreshold = 0, oType = "sites", output = "locs")
+length(standard.seeding[[2]])
+
+seed.x <- c(155, 165, 175)
+seed.y <- c(-5, -15, -25)
+seed.matrix <- rasterOccData(occData = raster, xyCoords1 = seed.x,
+xyCoords2 = seed.y, res = 100000, xyCoords = c("x", "y"),
+xyCell = c("cellX", "cellY"), uniqID = "cell")
+
+# Now let's see how many of these seeds
+manual.seeding <- cookies2(dataMat = raster, rarefaction = "none",
+seeding = seed.matrix, returnSeeds = TRUE, uniqID = "cell",
+xy = c("cellX", "cellY"), nSites = 2, r = 200000, oThreshold = 0,
+oType = "sites", output = "locs")
+length(manual.seeding[[2]])
 }

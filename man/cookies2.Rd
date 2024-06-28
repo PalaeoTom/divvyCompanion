@@ -37,9 +37,9 @@ cookies2(
 
 \item{reps}{A numeric value specifying the number of subsamples to be drawn from each radially constrained region if \code{rarefaction = "divvySites"}, \code{"weightedDivvySites"}, \code{"sites"}, \code{"occs"}, or \code{"sitesThenOccs"}. Default is \code{100}.}
 
-\item{nSites}{A numeric value specifying the minimum number of unique populated sites that must fall within a radially constrained region for it to be considered viable. Also, specifies the number of sites that are randomly drawn with replacement from each radially constrained region if \code{rarefaction = "sites"} or \code{"sitesThenOccs"}. Default is \code{3}.}
+\item{nSites}{A numeric value specifying the minimum number of unique populated sites that must fall within a radially constrained region for it to be considered viable. Also, specifies the number of sites that are randomly drawn \emph{without} replacement from each radially constrained region if \code{rarefaction = "sites"} or \code{"sitesThenOccs"}. Default is \code{3}.}
 
-\item{nOccs}{A numeric value specifying the number of occurrences to be randomly drawn with replacement from each radially constrained region if \code{rarefaction = "occs"} or \code{"sitesThenOccs"}. Default is \code{100}.}
+\item{nOccs}{A numeric value specifying the number of occurrences to be randomly drawn \emph{with} replacement from each radially constrained region if \code{rarefaction = "occs"} or \code{"sitesThenOccs"}. Default is \code{100}.}
 
 \item{oThreshold}{A numeric value between \code{0} and \code{1}, specifying the acceptable proportion of overlap in sites or area between viable radially constrained regions. Default is 0 (i.e., all subsamples returned will be spatially independent). Set to 1 to have function behave like \code{\link[divvy:cookies]{divvy::cookies()}}.}
 
@@ -101,9 +101,9 @@ For explanations of how the subsampling procedures used when \code{rarefaction =
 
 The three new subsampling procedures are described below. Each of them differ from the two subsampling procedures offered by \code{\link[divvy:cookies]{divvy::cookies()}} in that they draw the \code{reps} subsamples from each viable RCR, rather than randomly drawing \code{reps} subsamples from \code{reps} randomly selected viable RCRs. When used in conjunction with a low threshold for overlap (i.e., \code{oThreshold = 0}), this limits oversampling of occurrence-rich geographic areas.
 \enumerate{
-\item \code{rarefaction = "sites"}: draws \code{nSites} sites randomly with replacement from each RCR. Each subsample contains all occurrences associated with the RCR.
-\item \code{rarefaction = "occs"}: draws \code{nOccs} occurrences randomly with replacement from each RCR. Each subsample contains \code{nOccs} occurrences drawn from all sites within the RCR.
-\item \code{rarefaction = "sitesThenOccs"}: draws \code{nSites} sites randomly with replacement from each RCR, then draws \code{nOccs} occurrences from the occurrences associated with selected sites. Each subsample contains \code{nOccs} occurrences drawn from \code{nSites} sites within the RCR.
+\item \code{rarefaction = "sites"}: draws \code{nSites} sites randomly \emph{without} replacement from each RCR. Each subsample contains all occurrences associated with the RCR.
+\item \code{rarefaction = "occs"}: draws \code{nOccs} occurrences randomly \emph{with} replacement from each RCR. Each subsample contains \code{nOccs} occurrences drawn from all sites within the RCR.
+\item \code{rarefaction = "sitesThenOccs"}: draws \code{nSites} sites randomly \emph{without} replacement from each RCR, then randomly draws \code{nOccs} occurrences \emph{with} replacement from the occurrences associated with selected sites. Each subsample contains \code{nOccs} occurrences drawn from \code{nSites} sites within the RCR.
 }
 }
 
@@ -132,7 +132,7 @@ raster <- rasterOccData(pts, res = 200000,
 xyCoords = c("x", "y"), xyCell = c("cellX", "cellY"),
 uniqID = "cell")
 
-# sample 5 sets of 3 occurrences within 200km radius
+# sample 5 sets of 3 occurrences within 1000km radius
 raster.subsamples <- cookies2(dataMat = raster, uniqID = "cell",
-xy = c("cellX", "cellY"), reps = 5, nSites = 3, r = 200000)
+xy = c("cellX", "cellY"), reps = 5, nSites = 3, r = 1000000)
 }

@@ -7,8 +7,8 @@
 #' @param seeding Either `NULL` (the default) or a matrix generated using [rasterOccData()] function, specifying the location of the centroids to be used to define radially constrained regions. If `NULL`, each unique populated site within `dataMat` will be assessed for viability as the center of a radially constrained region.
 #' @param rarefaction A character string specifying the subsampling method to be used, if any. Options are `"divvySites"` (the default, equivalent to [divvy::cookies()] with `weight = FALSE`), `"weightedDivvySites"` (equivalent to [divvy::cookies()] with `weight = TRUE`), `"sites"`, `"occs"`, `"sitesThenOccs"`, and `"none"`. See below for further details.
 #' @param reps A numeric value specifying the number of subsamples to be drawn from each radially constrained region if `rarefaction = "divvySites"`, `"weightedDivvySites"`, `"sites"`, `"occs"`, or `"sitesThenOccs"`. Default is `100`.
-#' @param nSites A numeric value specifying the minimum number of unique populated sites that must fall within a radially constrained region for it to be considered viable. Also, specifies the number of sites that are randomly drawn with replacement from each radially constrained region if `rarefaction = "sites"` or `"sitesThenOccs"`. Default is `3`.
-#' @param nOccs A numeric value specifying the number of occurrences to be randomly drawn with replacement from each radially constrained region if `rarefaction = "occs"` or `"sitesThenOccs"`. Default is `100`.
+#' @param nSites A numeric value specifying the minimum number of unique populated sites that must fall within a radially constrained region for it to be considered viable. Also, specifies the number of sites that are randomly drawn *without* replacement from each radially constrained region if `rarefaction = "sites"` or `"sitesThenOccs"`. Default is `3`.
+#' @param nOccs A numeric value specifying the number of occurrences to be randomly drawn *with* replacement from each radially constrained region if `rarefaction = "occs"` or `"sitesThenOccs"`. Default is `100`.
 #' @param oThreshold A numeric value between `0` and `1`, specifying the acceptable proportion of overlap in sites or area between viable radially constrained regions. Default is 0 (i.e., all subsamples returned will be spatially independent). Set to 1 to have function behave like [divvy::cookies()].
 #' @param oType A character string, either `"sites"` (the default) or `"area"`. If `oThreshold < 1`, `oType` specifies whether the degree of overlap between radially constrained regions should be quantified using sites (`oType = "sites"`) or area (`oType = "area"`).
 #' @param oPruningMode A character string, either `"maxOccs"` (the default) or `"minOverlap"`. If `oThreshold < 1`, `oPruningMode` specifies whether the overlapping radially constrained regions with the least associated occurrence data (`oPruningMode = "maxOccs"`) or the most overlap with other regions (`oPruningMode = "minOverlap"`) should be dropped.
@@ -55,9 +55,9 @@
 #' For explanations of how the subsampling procedures used when `rarefaction = "divvySites"` or `"weightedDivvySites"`, see [divvy::cookies()] documentation.
 #'
 #' The three new subsampling procedures are described below. Each of them differ from the two subsampling procedures offered by [divvy::cookies()] in that they draw the `reps` subsamples from each viable RCR, rather than randomly drawing `reps` subsamples from `reps` randomly selected viable RCRs. When used in conjunction with a low threshold for overlap (i.e., `oThreshold = 0`), this limits oversampling of occurrence-rich geographic areas.
-#' 1. `rarefaction = "sites"`: draws `nSites` sites randomly with replacement from each RCR. Each subsample contains all occurrences associated with the RCR.
-#' 2. `rarefaction = "occs"`: draws `nOccs` occurrences randomly with replacement from each RCR. Each subsample contains `nOccs` occurrences drawn from all sites within the RCR.
-#' 3. `rarefaction = "sitesThenOccs"`: draws `nSites` sites randomly with replacement from each RCR, then draws `nOccs` occurrences from the occurrences associated with selected sites. Each subsample contains `nOccs` occurrences drawn from `nSites` sites within the RCR.
+#' 1. `rarefaction = "sites"`: draws `nSites` sites randomly *without* replacement from each RCR. Each subsample contains all occurrences associated with the RCR.
+#' 2. `rarefaction = "occs"`: draws `nOccs` occurrences randomly *with* replacement from each RCR. Each subsample contains `nOccs` occurrences drawn from all sites within the RCR.
+#' 3. `rarefaction = "sitesThenOccs"`: draws `nSites` sites randomly *without* replacement from each RCR, then randomly draws `nOccs` occurrences *with* replacement from the occurrences associated with selected sites. Each subsample contains `nOccs` occurrences drawn from `nSites` sites within the RCR.
 #'
 #' @examples
 #' # Two examples, first with non-rasterised data
@@ -84,9 +84,9 @@
 #' xyCoords = c("x", "y"), xyCell = c("cellX", "cellY"),
 #' uniqID = "cell")
 #'
-#' # sample 5 sets of 3 occurrences within 200km radius
+#' # sample 5 sets of 3 occurrences within 1000km radius
 #' raster.subsamples <- cookies2(dataMat = raster, uniqID = "cell",
-#' xy = c("cellX", "cellY"), reps = 5, nSites = 3, r = 200000)
+#' xy = c("cellX", "cellY"), reps = 5, nSites = 3, r = 1000000)
 cookies2 <- function(dataMat, xy, uniqID = "cell", r, seeding = NULL, rarefaction = "divvySites", reps = 100, nSites = 3, nOccs = 100,
                      oThreshold = 0, oType = "sites", oPruningMode = "maxOccs",
                      returnSeeds = F, crs = "EPSG:8857", output = "locs"){
@@ -111,7 +111,11 @@ cookies2 <- function(dataMat, xy, uniqID = "cell", r, seeding = NULL, rarefactio
     subsamples <- replicate(reps, cookie2(dataMat, seeds, xy, nSites, allPools, weight, coords, crs, output, divvyRarefaction = T, returnSeeds), simplify = FALSE)
     if(returnSeeds){
       usedSeeds <- sapply(1:length(subsamples), function(x) subsamples[[x]][[1]])
-      seed_out <- coords[which(coords$id %in% usedSeeds),]
+      if(is.null(seeding)){
+        seed_out <- coords[which(coords$id %in% usedSeeds),]
+      } else {
+        seed_out <- seeding[which(seeding$id %in% usedSeeds),]
+      }
       subsamples_out <- lapply(1:length(subsamples), function(x) subsamples[[x]][[2]])
       names(subsamples_out) <- usedSeeds
       return(list("seeds" = seed_out, "subsamples" = subsamples_out))
@@ -130,7 +134,7 @@ cookies2 <- function(dataMat, xy, uniqID = "cell", r, seeding = NULL, rarefactio
           ## Get reps samples
           sub2samples <- lapply(1:reps, function(all){
             ## Get sample of cells
-            samp <- sample(cells, size = nSites, replace = T)
+            samp <- sample(cells, size = nSites, replace = F)
             ## extract data frame
             s2sample <- subsamples[[x]][which(subsamples[[x]][,uniqID] %in% samp),]
           })
@@ -138,7 +142,11 @@ cookies2 <- function(dataMat, xy, uniqID = "cell", r, seeding = NULL, rarefactio
         ## prepare output
         if(returnSeeds){
           names(rareSubs) <- seeds
-          seed_out <- coords[which(coords$id %in% seeds),]
+          if(is.null(seeding)){
+            seed_out <- coords[which(coords$id %in% seeds),]
+          } else {
+            seed_out <- seeding[which(seeding$id %in% seeds),]
+          }
           return(list("seeds" = seed_out, "subsamples" = subsamples))
         } else {
           return(rareSubs)
@@ -158,7 +166,11 @@ cookies2 <- function(dataMat, xy, uniqID = "cell", r, seeding = NULL, rarefactio
         ## prepare output
         if(returnSeeds){
           names(rareSubs) <- seeds
-          seed_out <- coords[which(coords$id %in% seeds),]
+          if(is.null(seeding)){
+            seed_out <- coords[which(coords$id %in% seeds),]
+          } else {
+            seed_out <- seeding[which(seeding$id %in% seeds),]
+          }
           return(list("seeds" = seed_out, "subsamples" = subsamples))
         } else {
           return(rareSubs)
@@ -172,7 +184,7 @@ cookies2 <- function(dataMat, xy, uniqID = "cell", r, seeding = NULL, rarefactio
           ## Get repOccs samples
           sub2samples <- lapply(1:reps, function(all){
             ## Get sample of cells
-            sampCells <- sample(cells, size = nSites, replace = T)
+            sampCells <- sample(cells, size = nSites, replace = F)
             ## Get occurrences with these cells
             sampCellOccs <- which(subsamples[[x]][,uniqID] %in% sampCells)
             ## Get sample of occurrences
@@ -184,7 +196,11 @@ cookies2 <- function(dataMat, xy, uniqID = "cell", r, seeding = NULL, rarefactio
         ## prepare output
         if(returnSeeds){
           names(rareSubs) <- seeds
-          seed_out <- coords[which(coords$id %in% seeds),]
+          if(is.null(seeding)){
+            seed_out <- coords[which(coords$id %in% seeds),]
+          } else {
+            seed_out <- seeding[which(seeding$id %in% seeds),]
+          }
           return(list("seeds" = seed_out, "subsamples" = subsamples))
         } else {
           return(rareSubs)
@@ -194,7 +210,11 @@ cookies2 <- function(dataMat, xy, uniqID = "cell", r, seeding = NULL, rarefactio
       if(rarefaction == "none"){
         if(returnSeeds){
           names(subsamples) <- seeds
-          seed_out <- coords[which(coords$id %in% seeds),]
+          if(is.null(seeding)){
+            seed_out <- coords[which(coords$id %in% seeds),]
+          } else {
+            seed_out <- seeding[which(seeding$id %in% seeds),]
+          }
           return(list("seeds" = seed_out, "subsamples" = subsamples))
         } else {
           return(subsamples)
