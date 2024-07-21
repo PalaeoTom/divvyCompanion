@@ -31,7 +31,7 @@ cookies2(
 
 \item{r}{A numeric value specifying the radius (in metres) to use to define radially constrained regions.}
 
-\item{seeding}{Either \code{NULL} (the default) or a matrix generated using \code{\link[=rasterOccData]{rasterOccData()}} function, specifying the location of the centroids to be used to define radially constrained regions. If \code{NULL}, each unique populated site within \code{dataMat} will be assessed for viability as the center of a radially constrained region.}
+\item{seeding}{Either \code{NULL} (the default) or a matrix generated using \code{\link[=defineSeeds]{defineSeeds()}} function, specifying the location of the centroids to be used to define radially constrained regions. If \code{NULL}, each unique populated site within \code{dataMat} will be assessed for viability as the center of a radially constrained region.}
 
 \item{rarefaction}{A character string specifying the subsampling method to be used, if any. Options are \code{"divvySites"} (the default, equivalent to \code{\link[divvy:cookies]{divvy::cookies()}} with \code{weight = FALSE}), \code{"weightedDivvySites"} (equivalent to \code{\link[divvy:cookies]{divvy::cookies()}} with \code{weight = TRUE}), \code{"sites"}, \code{"occs"}, \code{"sitesThenOccs"}, and \code{"none"}. See below for further details.}
 
@@ -51,7 +51,7 @@ cookies2(
 
 \item{crs}{A character string specifying a coordinate reference system (CRS). You can use the following formats to define coordinate reference systems: WKT, PROJ.4 (e.g., \code{crs = +proj=longlat +datum=WGS84}), or an EPSG code (e.g., \code{crs = "EPSG:4326"}). But note that the PROJ.4 notation has been deprecated, and you can only use it with the WGS84/NAD83 and NAD27 datums. Other datums are silently ignored. Default is \code{"EPSG:8857"}.}
 
-\item{output}{A character string, either \code{"full"} or \code{"locs"}. Specifies whether the returned data should be two columns of subsample site coordinates (\code{output = "locs"}) or the subset of rows from dataMat associated with those coordinates (\code{output = "full"}).}
+\item{output}{A character string, either \code{"full"},\code{"locs"}, or '"seeds"'. Specifies whether the returned data should be two columns of subsample site coordinates (\code{output = "locs"}), the subset of rows from dataMat associated with those coordinates (\code{output = "full"}), or a data.frame of the seeds used ('output = "seeds").}
 }
 \value{
 Output format changes depending on arguments used.
@@ -109,8 +109,8 @@ The three new subsampling procedures are described below. Each of them differ fr
 
 \examples{
 # Two examples, first with non-rasterised data
-# Get 10 data points
-n <- 10
+# Get 100 data points
+n <- 100
 
 # 10 sets of x and y coordinates
 x <- seq(from = 150, to = 155, length.out = n)

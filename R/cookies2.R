@@ -14,7 +14,7 @@
 #' @param oPruningMode A character string, either `"maxOccs"` (the default) or `"minOverlap"`. If `oThreshold < 1`, `oPruningMode` specifies whether the overlapping radially constrained regions with the least associated occurrence data (`oPruningMode = "maxOccs"`) or the most overlap with other regions (`oPruningMode = "minOverlap"`) should be dropped.
 #' @param returnSeeds `TRUE` or `FALSE` (the default). If `TRUE`, the output of this function is nested within a list that includes a second element containing the coordinates of the centroids of each radially constrained region represented in the other element of the output.
 #' @param crs A character string specifying a coordinate reference system (CRS). You can use the following formats to define coordinate reference systems: WKT, PROJ.4 (e.g., `crs = +proj=longlat +datum=WGS84`), or an EPSG code (e.g., `crs = "EPSG:4326"`). But note that the PROJ.4 notation has been deprecated, and you can only use it with the WGS84/NAD83 and NAD27 datums. Other datums are silently ignored. Default is `"EPSG:8857"`.
-#' @param output A character string, either `"full"`,`"locs"`, or '"seeds"'. Specifies whether the returned data should be two columns of subsample site coordinates (`output = "locs"`) or the subset of rows from dataMat associated with those coordinates (`output = "full"`).
+#' @param output A character string, either `"full"`,`"locs"`, or '"seeds"'. Specifies whether the returned data should be two columns of subsample site coordinates (`output = "locs"`), the subset of rows from dataMat associated with those coordinates (`output = "full"`), or a data.frame of the seeds used ('output = "seeds").
 #'
 #' @return Output format changes depending on arguments used.
 #' If `returnSeeds = FALSE` and:
@@ -61,8 +61,8 @@
 #'
 #' @examples
 #' # Two examples, first with non-rasterised data
-#' # Get 10 data points
-#' n <- 10
+#' # Get 100 data points
+#' n <- 100
 #'
 #' # 10 sets of x and y coordinates
 #' x <- seq(from = 150, to = 155, length.out = n)

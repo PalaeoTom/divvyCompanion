@@ -54,18 +54,11 @@
 #' dat <- data.frame(seedX, seedY)
 #' colnames(dat) <- xy.name
 #' # Use defineSeeds to create seed matrix
-seedMatrix <- defineSeeds(grid = grid,
-dat = dat, xy = xy.name)
-# Use cookies to assess viability of 20km radius regions
-manual.seeding <- cookies2(dataMat = pts, rarefaction = "none",
-                           seeding = seedMtrix, returnSeeds = TRUE, uniqID = "cell",
-                           xy = c("cellX", "cellY"), nSites = 2, r = 20000, oThreshold = 0,
-                           oType = "sites", output = "locs")
-length(manual.seeding[[2]])
-
-
+#' seedMatrix <- defineSeeds(grid = grid,
+#' dat = dat, xy = xy.name)
+#' # Use cookies to assess viability of 20km radius regions
 defineSeeds <- function(grid, dat, xy = c("x","y")){
-  if(class(grid) == "SpatRaster"){
+  if(inherits(grid, "SpatRaster")){
     if(all(xy %in% colnames(dat))){
       ## get crs EPSG code
       prj <- paste(unlist(terra::crs(grid, describe = T)[2:3]), collapse = ":")
