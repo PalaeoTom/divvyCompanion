@@ -1,7 +1,7 @@
 #' Modified version of divvy internal function "cookie"
 #'
 #' @noRd
-cookie2 <- function(dat, seeds, xy, nSite, allPools, weight, coords, crs, output, divvyRarefaction, returnSeeds) {
+cookie2 <- function(dat, seeds, xy, nSite, allPools, weight, coords, crs, output, divvyRarefaction) {
   if(divvyRarefaction){
     if(length(seeds) > 1) {
       seed <- sample(sample(seeds), 1)
@@ -38,11 +38,7 @@ cookie2 <- function(dat, seeds, xy, nSite, allPools, weight, coords, crs, output
         stop("output argument must be one of c('full', 'locs')")
       }
     }
-    if(returnSeeds){
-      return(list("seed" = seed, "subsample" = out))
-    } else {
-      return(out)
-    }
+    return(out)
   } else {
     output <- lapply(1:length(seeds), function(s){
       pool <- allPools[seeds[[s]]][[1]]
@@ -59,7 +55,7 @@ cookie2 <- function(dat, seeds, xy, nSite, allPools, weight, coords, crs, output
         if (output == "locs") {
           out <- coordLocs
         } else {
-          stop("output argument must be one of c('full', 'locs')")
+          stop("output argument must be one of c('full', 'locs', 'seeds')")
         }
       }
       return(out)

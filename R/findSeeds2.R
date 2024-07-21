@@ -14,8 +14,12 @@ findSeeds2 <- function(dat, rawData, siteId, xy, uniqID, r, nSite, crs = "EPSG:4
     })
     names(posPools) <- sites
   } else {
-    seedDat <- rbind(dat, seeding)
-    sites <- seedDat[, siteId]
+    seedDF <- as.data.frame(matrix("seeds", nrow = nrow(seeding), ncol = ncol(dat)))
+    colnames(seedDF) <- colnames(dat)
+    seedDF[,which(colnames(dat) %in% xy)] <- seeding[,which(colnames(seeding) %in% xy)]
+    seedDF[,which(colnames(dat) %in% siteId)] <- seeding[,which(colnames(seeding) %in% siteId)]
+    seedDat <- rbind(dat, seedDF)
+    sites <- seedDat[,siteId]
     seeds <- seeding[,siteId]
     datSV <- terra::vect(seedDat, geom = xy, crs = crs)
     posPools <- lapply(seeds, function(s) {
