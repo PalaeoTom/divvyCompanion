@@ -1,30 +1,30 @@
 #' Find radially constrained spatial subsamples that fulfil all specified criteria
 #'
 #' @noRd
-findSeeds <- function(dat, rawData, siteId, xy, uniqID, r, nSite, crs = "EPSG:4326", oThreshold = 0, oType = "sites", oPruningMode = "maxOccs", seeding = NULL){
+findSeeds <- function(coords, dat, siteId, xy, r, nSite, crs = "EPSG:4326", oThreshold = 0, oType = "sites", oPruningMode = "maxOccs", seeding = NULL){
   if(is.null(seeding)){
-    sites <- dat[, siteId]
-    datSV <- terra::vect(dat, geom = xy, crs = crs)
+    sites <- coords[, siteId]
+    coordsSV <- terra::vect(coords, geom = xy, crs = crs)
     posPools <- lapply(sites, function(s) {
-      seedRow <- which(dat[, siteId] == s)[1]
-      sPool <- divvyCompanion::findPool(seedRow, datSV, sites, xy, r, crs)
+      seedRow <- which(coords[, siteId] == s)[1]
+      sPool <- findPool(seedRow, coordsSV, sites, xy, r, crs)
       n <- length(sPool)
       if (n >= nSite)
         sPool
     })
     names(posPools) <- sites
   } else {
-    seedDF <- as.data.frame(matrix("seeds", nrow = nrow(seeding), ncol = ncol(dat)))
-    colnames(seedDF) <- colnames(dat)
-    seedDF[,which(colnames(dat) %in% xy)] <- seeding[,which(colnames(seeding) %in% xy)]
-    seedDF[,which(colnames(dat) %in% siteId)] <- seeding[,which(colnames(seeding) %in% siteId)]
-    seedDat <- rbind(dat, seedDF)
-    sites <- seedDat[,siteId]
+    seedDF <- as.data.frame(matrix("seeds", nrow = nrow(seeding), ncol = ncol(coords)))
+    colnames(seedDF) <- colnames(coords)
+    seedDF[,which(colnames(coords) %in% xy)] <- seeding[,which(colnames(seeding) %in% xy)]
+    seedDF[,which(colnames(coords) %in% siteId)] <- seeding[,which(colnames(seeding) %in% siteId)]
+    seedCoords <- rbind(coords, seedDF)
+    sites <- seedCoords[,siteId]
     seeds <- seeding[,siteId]
-    datSV <- terra::vect(seedDat, geom = xy, crs = crs)
+    coordsSV <- terra::vect(seedCoords, geom = xy, crs = crs)
     posPools <- lapply(seeds, function(s) {
-      seedRow <- which(seedDat[, siteId] == s)[1]
-      sPool <- divvyCompanion::findPool(seedRow, datSV, sites, xy, r, crs)
+      seedRow <- which(seedCoords[, siteId] == s)[1]
+      sPool <- findPool(seedRow, coordsSV, sites, xy, r, crs)
       sPool <- sPool[-which(sPool %in% seeds)]
       n <- length(sPool)
       if (n >= nSite)
@@ -36,11 +36,11 @@ findSeeds <- function(dat, rawData, siteId, xy, uniqID, r, nSite, crs = "EPSG:43
   if(length(posPools) > 1) {
     if(oType == "area"){
       if(is.null(seeding)){
-        datSVSub <- terra::vect(dat[dat[,siteId] %in% names(posPools),], geom = xy, crs = crs)
+        coordsSVSub <- terra::vect(coords[coords[,siteId] %in% names(posPools),], geom = xy, crs = crs)
       } else {
-        datSVSub <- terra::vect(seeding[seeding[,siteId] %in% names(posPools),], geom = xy, crs = crs)
+        coordsSVSub <- terra::vect(seeding[seeding[,siteId] %in% names(posPools),], geom = xy, crs = crs)
       }
-      posPoolsDM <- terra::distance(datSVSub, datSVSub)
+      posPoolsDM <- terra::distance(coordsSVSub, coordsSVSub)
       a <- pi*(r^2)
       overlap <- apply(posPoolsDM, c(1,2), function(x) getOverlap(d = x, r = r, a = a))
       diag(overlap) <- 0
@@ -93,7 +93,8 @@ findSeeds <- function(dat, rawData, siteId, xy, uniqID, r, nSite, crs = "EPSG:43
         if(oPruningMode == "maxOccs"){
           ## initialise droppers vector, get number of occurrences for each potential circular subsample
           droppers <- c()
-          posPools.occs <- sapply(1:length(posPools), function(x) nrow(rawData[which(rawData[,uniqID] %in% dat[which(dat[,siteId] %in% posPools[[x]]),uniqID]),]))
+          ## get number of occurrences
+          posPools.occs <- sapply(1:length(posPools), function(x) length(which(!is.na(match(data.frame(t(dat[,xy])),data.frame(t(coords[which(coords[,siteId] %in% posPools[[x]]),xy])))))))
           ## Now loop
           while(T){
             ## get each posPool element that overlaps with at least one other element

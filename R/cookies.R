@@ -2,7 +2,6 @@
 #'
 #' @param dat A data.frame or matrix containing taxon names, Cartesian coordinates, and any associated variables.
 #' @param xy 	A vector of two elements, specifying the name of columns in `dat` containing Cartesian coordinates, e.g. longitude and latitude. Coordinates for any shared sampling sites should be identical, and where sites are raster cells, coordinates are usually expected to be cell centroids.
-#' @param uniqID A character string specifying the name of the column in `dat` containing unique site identifiers (e.g., cell numbers added via [rasterOccData()]). Default is `"cell"`.
 #' @param r A numeric value specifying the radius (in metres) to use to define radially constrained regions.
 #' @param rarefy Whether sites within radially constrained regions should be subsampled (`rarefy = TRUE`, default) or not (`rarefy = FALSE`). If `TRUE`, `nSite` sites will be drawn from `iter` randomly selected radially constrained regions.
 #' @param weight Whether sites within the radially constrained region should be drawn at random (`weight = FALSE`, default) or with probability inversely proportional to the square of their distance from the centre of the region (`weight = TRUE`) during subsampling. Only applicable when `rarefy = TRUE`.
@@ -47,15 +46,15 @@
 #'
 #' @examples
 #' print("test")
-cookies <- function(dat, xy, uniqID = "cell", r, rarefy = TRUE, weight = FALSE, seeding = NULL, iter = 100, nSite = 3,
+cookies <- function(dat, xy, r, rarefy = TRUE, weight = FALSE, seeding = NULL, iter = 100, nSite = 3,
                      oThreshold = 0, oType = "sites", oPruningMode = "maxOccs",
                      crs = "EPSG:8857", output = "locs"){
   coords <- divvy::uniqify(dat, xy)
   coords$id <- paste0("loc", 1:nrow(coords))
   if(is.null(seeding)){
-    allPools <- divvyCompanion::findSeeds(coords, dat, "id", xy, uniqID, r, nSite, crs, oThreshold, oType, oPruningMode)
+    allPools <- findSeeds(coords, dat, "id", xy, r, nSite, crs, oThreshold, oType, oPruningMode)
   } else {
-    allPools <- divvyCompanion::findSeeds(coords, dat, "id", xy, uniqID, r, nSite, crs, oThreshold, oType, oPruningMode, seeding)
+    allPools <- findSeeds(coords, dat, "id", xy, r, nSite, crs, oThreshold, oType, oPruningMode, seeding)
   }
   if (length(allPools) < 1) {
     stop("not enough close sites for any subsample or all cookies exceed overlap threshold. Please adjust nSite or oThreshold.")
@@ -70,12 +69,12 @@ cookies <- function(dat, xy, uniqID = "cell", r, rarefy = TRUE, weight = FALSE, 
     }
   } else {
     if(rarefy){
-      subsamples <- replicate(iter, divvyCompanion::cookie(dat, seeds, xy, nSite, allPools, weight, coords, crs, output, rarefy), simplify = FALSE)
+      subsamples <- replicate(iter, cookie(dat, seeds, xy, nSite, allPools, weight, coords, crs, output, rarefy), simplify = FALSE)
       return(subsamples)
     } else {
       if(!rarefy){
         ## get sites subsamples if rarefying not by divvy
-        subsamples <- divvyCompanion::cookie(dat, seeds, xy, nSite, allPools, weight, coords, crs, output, rarefy)
+        subsamples <- cookie(dat, seeds, xy, nSite, allPools, weight, coords, crs, output, rarefy)
         return(subsamples)
       } else {
         stop("`rarefy needs to be TRUE or FALSE")
