@@ -70,11 +70,11 @@ xyCell = c("cellX", "cellY"), uniqID = "cell")
 # How many viable radially constrained regions do we have if we use
 # 200km radii, require a minimum of 2 grid cells,
 # and demand no overlap in sites? Let's find out.
-standard.seeding <- cookies2(dataMat = raster, returnSeeds = TRUE,
+standard.seeding <- cookies2(dat = raster,
 rarefaction = "none", seeding = NULL, uniqID = "cell",
-xy = c("cellX", "cellY"), nSites = 2, r = 200000,
+xy = c("cellX", "cellY"), nSite = 2, r = 200000,
 oThreshold = 0, oType = "sites", output = "locs")
-length(standard.seeding[[2]])
+length(standard.seeding)
 
 seed.x <- c(155, 165, 175)
 seed.y <- c(-5, -15, -25)
@@ -83,9 +83,9 @@ xyCoords2 = seed.y, res = 100000, xyCoords = c("x", "y"),
 xyCell = c("cellX", "cellY"), uniqID = "cell")
 
 # Now let's see how many of these seeds
-manual.seeding <- cookies2(dataMat = raster, rarefaction = "none",
-seeding = seed.matrix, returnSeeds = TRUE, uniqID = "cell",
-xy = c("cellX", "cellY"), nSites = 2, r = 200000, oThreshold = 0,
+manual.seeding <- cookies2(dat = raster, rarefaction = "none",
+seeding = seed.matrix, uniqID = "cell",
+xy = c("cellX", "cellY"), nSite = 2, r = 200000, oThreshold = 0,
 oType = "sites", output = "locs")
-length(manual.seeding[[2]])
+length(manual.seeding)
 }

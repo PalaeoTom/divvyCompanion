@@ -66,4 +66,5 @@ colnames(dat) <- xy.name
 seedMatrix <- defineSeeds(grid = grid,
 dat = dat, xy = xy.name)
 # Use cookies to assess viability of 20km radius regions
+# To be finished!
 }

@@ -45,11 +45,11 @@
 #' # How many viable radially constrained regions do we have if we use
 #' # 200km radii, require a minimum of 2 grid cells,
 #' # and demand no overlap in sites? Let's find out.
-#' standard.seeding <- cookies2(dataMat = raster, returnSeeds = TRUE,
+#' standard.seeding <- cookies2(dat = raster,
 #' rarefaction = "none", seeding = NULL, uniqID = "cell",
-#' xy = c("cellX", "cellY"), nSites = 2, r = 200000,
+#' xy = c("cellX", "cellY"), nSite = 2, r = 200000,
 #' oThreshold = 0, oType = "sites", output = "locs")
-#' length(standard.seeding[[2]])
+#' length(standard.seeding)
 #'
 # Now let's use it to generate a seed matrix for use with [cookies2()]
 #' seed.x <- c(155, 165, 175)
@@ -59,11 +59,11 @@
 #' xyCell = c("cellX", "cellY"), uniqID = "cell")
 #'
 #' # Now let's see how many of these seeds
-#' manual.seeding <- cookies2(dataMat = raster, rarefaction = "none",
-#' seeding = seed.matrix, returnSeeds = TRUE, uniqID = "cell",
-#' xy = c("cellX", "cellY"), nSites = 2, r = 200000, oThreshold = 0,
+#' manual.seeding <- cookies2(dat = raster, rarefaction = "none",
+#' seeding = seed.matrix, uniqID = "cell",
+#' xy = c("cellX", "cellY"), nSite = 2, r = 200000, oThreshold = 0,
 #' oType = "sites", output = "locs")
-#' length(manual.seeding[[2]])
+#' length(manual.seeding)
 rasterOccData <- function(occData, res, xyCoords1 = NULL, xyCoords2 = NULL, occData.crs = 'EPSG:4326', raster.crs = 'EPSG:8857', xyCoords = c('paleolng','paleolat'), xyCell = c('cellX','cellY'), uniqID = "cell"){
   if(is.null(xyCoords1) && is.null(xyCoords2)){
     ## initialise
