@@ -103,12 +103,13 @@ The three new subsampling procedures are described below. Each of them differ fr
 
 \examples{
 # Two examples, first with non-rasterised data
-# Get 100 data points
+# Generate occurrence data
 n <- 100
+set.seed(5)
 
-# 10 sets of x and y coordinates
-x <- seq(from = 150, to = 155, length.out = n)
-y <- seq(from = -10, to = -20, length.out = n)
+# 100 sets of x and y coordinates
+x <- runif(n, 0, 50)
+y <- runif(n, 0, 50)
 
 # Give each site a unique identifier
 z <- seq(1, n, 1)
@@ -117,16 +118,8 @@ z <- seq(1, n, 1)
 pts <- data.frame(x, y, z)
 colnames(pts) <- c("x", "y", "z")
 
-# Derive subsamples
+# Derive subsamples, 10km radius regions
+# Minimum 3 sites, no overlap
 subsamples <- cookies2(dat = pts, uniqID = "z",
-xy = c("x", "y"), iter = 5, nSite = 3, r = 200000)
-
-# Now let's try rasterising, then subsampling
-raster <- rasterOccData(pts, res = 200000,
-xyCoords = c("x", "y"), xyCell = c("cellX", "cellY"),
-uniqID = "cell")
-
-# sample 5 sets of 3 occurrences within 1000km radius
-raster.subsamples <- cookies2(dat = raster, uniqID = "cell",
-xy = c("cellX", "cellY"), iter = 5, nSite = 3, r = 1000000)
+xy = c("x", "y"), iter = 5, nSite = 3, r = 10000)
 }

@@ -25,51 +25,66 @@
 #' You can use the following formats to define coordinate reference systems: WKT, PROJ.4 (e.g., `crs = +proj=longlat +datum=WGS84`), or an EPSG code (e.g., `crs = "EPSG:4326"`). But note that the PROJ.4 notation has been deprecated, and you can only use it with the WGS84/NAD83 and NAD27 datums. Other datums are silently ignored.
 #'
 #' @examples
-#' # Get 50 data points
-#' n <- 50
+#' # First, load terra
+#' library(terra)
 #'
-#' # 50 sets of x and y coordinates (coordinate reference system: 'EPSG:4326')
-#' x <- seq(from = 180, to = 150, length.out = n)
-#' y <- seq(from = 0, to = -30, length.out = n)
+#' # Work in Equal Earth project coordinates
+#' prj <- 'EPSG:8857'
+#'
+#' # Generate occurrence data
+#' n <- 100
+#' set.seed(5)
+#'
+#' # 100 sets of x and y coordinates
+#' x <- runif(n, 0, 50)
+#' y <- runif(n, 0, 50)
+#'
+#' # Equal Earth is in metres
+#' # Convert from km
+#' x <- x * 1000
+#' y <- y * 1000
 #'
 #' # Combine into data frame and label columns
 #' pts <- data.frame(x, y)
 #' colnames(pts) <- c("x", "y")
 #'
-#' # Rasterise (cell coordinate reference system 'EPSG:8857' by default)
-#' # using 200km grid cells
-#' raster <- rasterOccData(occData = pts, res = 100000,
-#' xyCoords = c("x", "y"),
+#' # Rasterise (raster crs is 'EPSG:8857' by default)
+#' # using 5km grid cells
+#' raster <- rasterOccData(occData = pts, res = 5000,
+#' xyCoords = c("x", "y"), occData.crs = prj,
 #' xyCell = c("cellX", "cellY"), uniqID = "cell")
 #'
 #' # How many viable radially constrained regions do we have if we use
-#' # 200km radii, require a minimum of 2 grid cells,
+#' # 10km radii, require a minimum of 2 grid cells,
 #' # and demand no overlap in sites? Let's find out.
 #' standard.seeding <- cookies2(dat = raster,
 #' rarefaction = "none", seeding = NULL, uniqID = "cell",
-#' xy = c("cellX", "cellY"), nSite = 2, r = 200000,
+#' xy = c("cellX", "cellY"), nSite = 2, r = 10000,
 #' oThreshold = 0, oType = "sites", output = "locs")
 #' length(standard.seeding)
 #'
-# Now let's use it to generate a seed matrix for use with [cookies2()]
-#' seed.x <- c(155, 165, 175)
-#' seed.y <- c(-5, -15, -25)
+#' # Now let's use it to generate a seed matrix for use with [cookies2()]
+#' # Set coordinates for our seeds
+#' # in km
+#' seed.x <- c(10000, 15000, 20000, 25000, 30000, 35000, 40000)
+#' seed.y <- c(10000, 15000, 20000, 25000, 30000, 35000, 40000)
+#'
 #' seed.matrix <- rasterOccData(occData = raster, xyCoords1 = seed.x,
-#' xyCoords2 = seed.y, res = 100000, xyCoords = c("x", "y"),
+#' xyCoords2 = seed.y, res = 5000, xyCoords = c("x", "y"),
+#' occData.crs = prj,
 #' xyCell = c("cellX", "cellY"), uniqID = "cell")
 #'
 #' # Now let's see how many of these seeds
+#' # produce usable 10km radius regions
 #' manual.seeding <- cookies2(dat = raster, rarefaction = "none",
 #' seeding = seed.matrix, uniqID = "cell",
-#' xy = c("cellX", "cellY"), nSite = 2, r = 200000, oThreshold = 0,
+#' xy = c("cellX", "cellY"), nSite = 2, r = 10000, oThreshold = 0,
 #' oType = "sites", output = "locs")
 #' length(manual.seeding)
 rasterOccData <- function(occData, res, xyCoords1 = NULL, xyCoords2 = NULL, occData.crs = 'EPSG:4326', raster.crs = 'EPSG:8857', xyCoords = c('paleolng','paleolat'), xyCell = c('cellX','cellY'), uniqID = "cell"){
   if(is.null(xyCoords1) && is.null(xyCoords2)){
-    ## initialise
-    rWorld <- terra::rast()
-    ## define resolution and coordinate system of raster
-    rPrj <- terra::project(x = rWorld, y = raster.crs, res = res)
+    ## define grid
+    rPrj <- terra::project(x = terra::rast(), y = raster.crs, res = res)
     terra::values(rPrj) <- 1:terra::ncell(rPrj)
     ## convert occurrence data to spatVector
     llOccs <- terra::vect(occData, geom = xyCoords, crs = occData.crs)
@@ -87,10 +102,8 @@ rasterOccData <- function(occData, res, xyCoords1 = NULL, xyCoords2 = NULL, occD
     return(occData)
   } else {
     if(is.numeric(xyCoords1) && is.vector(xyCoords1) && is.numeric(xyCoords2) && is.vector(xyCoords2)){
-      ## initialise
-      rWorld <- terra::rast()
       ## define resolution and coordinate system of raster
-      rPrj <- terra::project(x = rWorld, y = raster.crs, res = res)
+      rPrj <- terra::project(x = terra::rast(), y = raster.crs, res = res)
       terra::values(rPrj) <- 1:terra::ncell(rPrj)
       ## create mock matrix
       seedMatrix <- as.data.frame(matrix("seed", ncol = ncol(occData), nrow = length(xyCoords1)))
