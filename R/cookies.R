@@ -45,7 +45,27 @@
 #' For explanations of how the subsampling procedures used when `rarefy = TRUE` and `weight = TRUE/FALSE`, see [divvy::cookies()] documentation.
 #'
 #' @examples
-#' print("test")
+#' # First, load terra
+#' library(terra)
+#' # Generate occurrence data
+#' n <- 100
+#' set.seed(5)
+#' # 100 sets of x and y coordinates
+#' x <- runif(n, 0, 50)
+#' y <- runif(n, 0, 50)
+#' # Units in equal earth are in meters
+#' # So if we consider x and y as given in km
+#' x <- x * 1000
+#' y <- y * 1000
+#' # Set name for coords
+#' xy.name <- c("x", "y")
+#' # Combine into data frame and label columns
+#' pts <- data.frame(x, y)
+#' colnames(pts) <- xy.name
+#' # Try spatial subsampling
+#' # 10km radius, minimum 3 sites, no overlap
+#' subsamples <- cookies(pts, xy = xy.name,
+#' r = 10000, rarefy = TRUE, output = "full")
 cookies <- function(dat, xy, r, rarefy = TRUE, weight = FALSE, seeding = NULL, iter = 100, nSite = 3,
                      oThreshold = 0, oType = "sites", oPruningMode = "maxOccs",
                      crs = "EPSG:8857", output = "locs"){
@@ -61,7 +81,7 @@ cookies <- function(dat, xy, r, rarefy = TRUE, weight = FALSE, seeding = NULL, i
   }
   seeds <- names(allPools)
   if(output == "seeds"){
-    if(seeding){
+    if(!is.null(seeding)){
       return(seeding)
     } else {
       out <- coords[which(coords[,"id"] %in% seeds),-which(colnames(coords)=="id")]
@@ -69,12 +89,12 @@ cookies <- function(dat, xy, r, rarefy = TRUE, weight = FALSE, seeding = NULL, i
     }
   } else {
     if(rarefy){
-      subsamples <- replicate(iter, cookie(dat, seeds, xy, nSite, allPools, weight, coords, crs, output, rarefy), simplify = FALSE)
+      subsamples <- replicate(iter, cookie(dat, seeds, "id", xy, nSite, allPools, weight, seeding, coords, crs, output, rarefy), simplify = FALSE)
       return(subsamples)
     } else {
       if(!rarefy){
         ## get sites subsamples if rarefying not by divvy
-        subsamples <- cookie(dat, seeds, xy, nSite, allPools, weight, coords, crs, output, rarefy)
+        subsamples <- cookie(dat, seeds, "id", xy, nSite, allPools, weight, seeding, coords, crs, output, rarefy)
         return(subsamples)
       } else {
         stop("`rarefy needs to be TRUE or FALSE")

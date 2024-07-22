@@ -7,7 +7,6 @@
 cookies(
   dat,
   xy,
-  uniqID = "cell",
   r,
   rarefy = TRUE,
   weight = FALSE,
@@ -25,8 +24,6 @@ cookies(
 \item{dat}{A data.frame or matrix containing taxon names, Cartesian coordinates, and any associated variables.}
 
 \item{xy}{A vector of two elements, specifying the name of columns in \code{dat} containing Cartesian coordinates, e.g. longitude and latitude. Coordinates for any shared sampling sites should be identical, and where sites are raster cells, coordinates are usually expected to be cell centroids.}
-
-\item{uniqID}{A character string specifying the name of the column in \code{dat} containing unique site identifiers (e.g., cell numbers added via \code{\link[=rasterOccData]{rasterOccData()}}). Default is \code{"cell"}.}
 
 \item{r}{A numeric value specifying the radius (in metres) to use to define radially constrained regions.}
 
@@ -87,5 +84,25 @@ For explanations of how the subsampling procedures used when \code{rarefy = TRUE
 }
 
 \examples{
-print("test")
+# First, load terra
+library(terra)
+# Generate occurrence data
+n <- 100
+set.seed(5)
+# 100 sets of x and y coordinates
+x <- runif(n, 0, 50)
+y <- runif(n, 0, 50)
+# Units in equal earth are in meters
+# So if we consider x and y as given in km
+x <- x * 1000
+y <- y * 1000
+# Set name for coords
+xy.name <- c("x", "y")
+# Combine into data frame and label columns
+pts <- data.frame(x, y)
+colnames(pts) <- xy.name
+# Try spatial subsampling
+# 10km radius, minimum 3 sites, no overlap
+subsamples <- cookies(pts, xy = xy.name,
+r = 10000, rarefy = TRUE, output = "full")
 }

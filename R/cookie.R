@@ -1,7 +1,7 @@
 #' Modified version of divvy internal function "cookie". Final version for export.
 #'
 #' @noRd
-cookie <- function(dat, seeds, xy, nSite, allPools, weight, coords, crs, output, rarefy) {
+cookie <- function(dat, seeds, siteId, xy, nSite, allPools, weight, seeding, coords, crs, output, rarefy) {
   if(rarefy){
     if(length(seeds) > 1) {
       seed <- sample(sample(seeds), 1)
@@ -31,6 +31,16 @@ cookie <- function(dat, seeds, xy, nSite, allPools, weight, coords, crs, output,
       datPtStrg <- paste(dat[, x], dat[, y], sep = "/")
       inSamp <- match(datPtStrg, sampPtStrg)
       out <- dat[!is.na(inSamp), ]
+      # Need to account for manual seeding
+      if(is.null(seeding)){
+        seed.xy <- coords[which(coords[,siteId] %in% seed),xy]
+        names(seed.xy) <- c(paste0("seed.",xy))
+        out <- cbind(out,seed.xy)
+      } else {
+        seed.xy <- seeding[which(seeding[,"id"] %in% seed),xy]
+        names(seed.xy) <- c(paste0("seed.",xy))
+        out <- cbind(out,seed.xy)
+      }
     } else {
       if (output == "locs") {
         out <- coordLocs
@@ -51,6 +61,16 @@ cookie <- function(dat, seeds, xy, nSite, allPools, weight, coords, crs, output,
         datPtStrg <- paste(dat[, x], dat[, y], sep = "/")
         inSamp <- match(datPtStrg, sampPtStrg)
         out <- dat[!is.na(inSamp), ]
+        # Need to account for manual seeding
+        if(is.null(seeding)){
+          seed.xy <- coords[which(coords[,siteId] %in% seeds[[s]]),xy]
+          names(seed.xy) <- c(paste0("seed.",xy))
+          out <- cbind(out,seed.xy)
+        } else {
+          seed.xy <- seeding[which(seeding[,"id"] %in% seeds[[s]]),xy]
+          names(seed.xy) <- c(paste0("seed.",xy))
+          out <- cbind(out,seed.xy)
+        }
       } else {
         if (output == "locs") {
           out <- coordLocs

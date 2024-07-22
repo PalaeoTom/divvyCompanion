@@ -17,12 +17,12 @@
 #' library(terra)
 #' # Work in Equal Earth project coordinates
 #' prj <- 'EPSG:8857'
-#' # Now we generate occurrence data
+#' # Generate occurrence data
 #' n <- 100
 #' set.seed(5)
-#' # 100 sets of x and y coordinates in North Africa
-#' x <- runif(n,  0, 30)
-#' y <- runif(n, 10, 30)
+#' # 100 sets of x and y coordinates
+#' x <- runif(n, 0, 50)
+#' y <- runif(n, 0, 50)
 #' # Units in equal earth are in meters
 #' # So if we consider x and y as given in km
 #' x <- x * 1000
@@ -34,10 +34,10 @@
 #' colnames(pts) <- xy.name
 #' # Finally, convert to SpatVector
 #' ptsPrj <- terra::vect(pts, geom = xy.name,
-#'                       crs = prj)
+#'                      crs = prj)
 #' # Now let's define grid template with 5km grid cells
 #' grid <- terra::project(x = terra::rast(),
-#'                        y = prj, res = 5*1000)
+#'                        y = prj, res = 5000)
 #' # Number grid cells
 #' terra::values(grid) <- 1:terra::ncell(grid)
 #' # Now assign occurrences in toy dataset to grid cells
@@ -45,19 +45,26 @@
 #' pts[,"cell"] <- terra::cells(grid, ptsPrj)[,"cell"]
 #' # Then the cell coordinates
 #' pts[,c("cellX", "cellY")] <- terra::xyFromCell(grid,
-#' pts[,"cell"])
+#'                                                pts[,"cell"])
 #' # Toy dataset ready
-#' # Now let's define out seeds in km
-#' seedX <- c(155000, 160000, 165000)
-#' seedY <- c(-5000, -10000, -15000)
+#' # Set coordinates for our seeds
+#' # in km
+#' seedX <- c(10000, 15000, 20000, 25000, 30000, 35000, 40000)
+#' seedY <- c(10000, 15000, 20000, 25000, 30000, 35000, 40000)
 #' # Concatenate into data.frame
 #' dat <- data.frame(seedX, seedY)
 #' colnames(dat) <- xy.name
 #' # Use defineSeeds to create seed matrix
 #' seedMatrix <- defineSeeds(grid = grid,
-#' dat = dat, xy = xy.name)
-#' # Use cookies to assess viability of 20km radius regions
-#' # To be finished!
+#'                          dat = dat, xy = xy.name)
+#' # Use cookies to assess viability of 10km radius regions
+#' # about seeds. Only viable regions returned.
+#' subsamples <- cookies(dat = pts, xy = c("cellX", "cellY"),
+#'                      seeding = seedMatrix,
+#'                      r = 10000, rarefy = FALSE,
+#'                      output = "full")
+#' length(subsamples)
+#' # Just two of the seven seed points are viable!
 defineSeeds <- function(grid, dat, xy = c("x","y")){
   if(inherits(grid, "SpatRaster")){
     if(all(xy %in% colnames(dat))){
