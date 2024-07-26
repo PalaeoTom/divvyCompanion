@@ -17,3 +17,31 @@ A data frame.
 \description{
 This function defines seed points for use with \code{\link[=cookies2]{cookies2()}} (via argument \code{seeding}).
 }
+\examples{
+# First, load terra
+library(terra)
+# Generate occurrence data
+n <- 100
+set.seed(5)
+# 100 sets of x and y coordinates in meters
+x <- runif(n, 0, 50000)
+y <- runif(n, 0, 50000)
+# Set name for coords
+xy.name <- c("x", "y")
+# Combine into data frame and label columns
+pts <- data.frame(x, y)
+colnames(pts) <- xy.name
+# Toy dataset ready
+# Set coordinates for our seeds
+seedX <- c(10000, 15000, 20000, 25000, 30000, 35000, 40000)
+seedY <- c(10000, 15000, 20000, 25000, 30000, 35000, 40000)
+# Concatenate into data.frame with
+# same coordinate names
+dat <- data.frame(seedX, seedY)
+colnames(dat) <- xy.name
+# Define seedMatrix
+seedMatrix <- defineSeeds(dat = dat, xy = xy.name)
+# Get subsamples
+subsamples <- cookies(dat = pts, xy = xy.name, r = 10000,
+seeding = seedMatrix, output = "full")
+}

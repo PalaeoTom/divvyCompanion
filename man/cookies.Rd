@@ -58,7 +58,7 @@ This version of the function differs from the original version in two key ways:
 \item It allows users to return the viable seed points as a data.frame with additional class \code{seedMatrix}, which can be used to manually seed (via argument \code{seeding}) future runs.
 }
 
-The function also now returns the coordinates of the seed point in each subsample, which can be used to specify the location of radially constrained region from which the subsample is drawn as a random effect in mixed models.
+The function also now returns the coordinates of the seed point in each subsample when \code{output = "full"}, which can be used to specify the location of radially constrained region from which the subsample is drawn as a random effect in mixed models.
 }
 \section{Manual seeding and raw radially constrained region outputs}{
 These functionalities were added to give the function greater exploratory utility. Now users can repeatedly sample the same regions using different radii (\code{r}) and site minima (\code{nSite}) to determine optimum values for data sampling.
