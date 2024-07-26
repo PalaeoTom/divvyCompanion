@@ -13,9 +13,6 @@ cookies(
   seeding = NULL,
   iter = 100,
   nSite = 3,
-  oThreshold = 0,
-  oType = "sites",
-  oPruningMode = "maxOccs",
   crs = "EPSG:8857",
   output = "locs"
 )
@@ -31,17 +28,11 @@ cookies(
 
 \item{weight}{Whether sites within the radially constrained region should be drawn at random (\code{weight = FALSE}, default) or with probability inversely proportional to the square of their distance from the centre of the region (\code{weight = TRUE}) during subsampling. Only applicable when \code{rarefy = TRUE}.}
 
-\item{seeding}{Either \code{NULL} (the default) or a matrix generated using \code{\link[=defineSeeds]{defineSeeds()}} function, specifying the location of the centroids to be used to define radially constrained regions. If \code{NULL}, each unique populated site within \code{dat} will be assessed for viability as the center of a radially constrained region.}
+\item{seeding}{Either \code{NULL} (the default) or a \code{data.frame} with additional class \code{seedMatrix} generated using the \code{\link[=defineSeeds]{defineSeeds()}} or \code{cookies} (with \code{output = "seeds"}) functions, specifying the location of the centroids to be used to define radially constrained regions. If \code{NULL}, each unique populated site within \code{dat} will be assessed for viability as the center of a radially constrained region.}
 
 \item{iter}{A numeric value specifying the number of subsamples to be drawn from each radially constrained region if \code{rarefy = "divvySites"}, \code{"weightedDivvySites"}, \code{"sites"}, \code{"occs"}, or \code{"sitesThenOccs"}. Default is \code{100}.}
 
 \item{nSite}{A numeric value specifying the minimum number of unique populated sites that must fall within a radially constrained region for it to be considered viable. Also, specifies the number of sites that are randomly drawn \emph{without} replacement from each radially constrained region if \code{rarefy = "sites"} or \code{"sitesThenOccs"}. Default is \code{3}.}
-
-\item{oThreshold}{A numeric value between \code{0} and \code{1}, specifying the acceptable proportion of overlap in sites or area between viable radially constrained regions. Default is 0 (i.e., all subsamples returned will be spatially independent). Set to 1 to have function behave like \code{\link[divvy:cookies]{divvy::cookies()}}.}
-
-\item{oType}{A character string, either \code{"sites"} (the default) or \code{"area"}. If \code{oThreshold < 1}, \code{oType} specifies whether the degree of overlap between radially constrained regions should be quantified using sites (\code{oType = "sites"}) or area (\code{oType = "area"}).}
-
-\item{oPruningMode}{A character string, either \code{"maxOccs"} (the default) or \code{"minOverlap"}. If \code{oThreshold < 1}, \code{oPruningMode} specifies whether the overlapping radially constrained regions with the least associated occurrence data (\code{oPruningMode = "maxOccs"}) or the most overlap with other regions (\code{oPruningMode = "minOverlap"}) should be dropped.}
 
 \item{crs}{A character string specifying a coordinate reference system (CRS). You can use the following formats to define coordinate reference systems: WKT, PROJ.4 (e.g., \code{crs = +proj=longlat +datum=WGS84}), or an EPSG code (e.g., \code{crs = "EPSG:4326"}). But note that the PROJ.4 notation has been deprecated, and you can only use it with the WGS84/NAD83 and NAD27 datums. Other datums are silently ignored. Default is \code{"EPSG:8857"}.}
 
@@ -60,27 +51,25 @@ This function is an expanded version of \code{\link[divvy:cookies]{divvy::cookie
 
 In brief, the function takes a single location as a starting (seed) point, circumscribes a circular buffer of \code{r} metres around it, and then identifies which observations fall within this circle. This process is repeated for each unique site in the dataset (unless these seed points are manually specified). The radially constrained regions (RCRs) that result are then assessed against user-specified criteria; if they contain insufficient data (measured by the number of unique populated sites they contain) and/or overlap with other RCRs by more than is deemed acceptable, they are dropped from the analysis. Those that are retained are then either returned in full (i.e., all occurrences that fall within them are returned) or subsampled.
 
-This version of the function differs from the original version in three key ways:
+This version of the function differs from the original version in two key ways:
 \enumerate{
-\item Offers users ability to limit or eliminate overlap between spatial subsamples.
 \item Allows users to explore viability of specific regions for spatial subsampling through manual seeding.
 \item Allows users to assess how changing values of \code{r}, \code{nSite}, and \code{oThreshold} affects the number of viable RCRs through the new option to return them without subsampling.
+\item It allows users to return the viable seed points as a data.frame with additional class \code{seedMatrix}, which can be used to manually seed (via argument \code{seeding}) future runs.
 }
 
-It also allows users to wrap the output of the function in a list which includes the seed points used to derive the sampled RCRs.
+The function also now returns the coordinates of the seed point in each subsample, which can be used to specify the location of radially constrained region from which the subsample is drawn as a random effect in mixed models.
 }
-\section{Overlap elimination}{
-The ability to control the amount of overlap between RCRs was added so as to give users the ability to eliminate pseudoreplication of spatial regions and standardise the sampling of different geographic areas. The latter is useful when the function is applied to global fossil occurrence datasets, as it curbs the impact of some geographic areas having an order of magnitude more occurrence data associated with them than others (e.g., the oversampling of Western European and North American localities relative to other parts of the world). Currently, the degree of overlap between two RCRs is quantified either as the proportion of sites within an RCR that fall within another (\code{oType = "sites"}) or the the proportion of the geographic area of an RCR that is included with another (\code{oType = "area"}). The former is the recommended option and the default.
-
-The function offers two methods for iteratively selecting and removing RCRs until those that remain do not exceed the overlap threshold (\code{oThreshold}): \code{oPruningMode = "maxOccs"} specifies that the overlapping RCRs with the least associated occurrence data should be the first to be removed, whereas \code{oPruningMode = "minOverlap"} specifies that the RCRs that overlap the most with other regions should be dropped first. Ties are decided randomly. In practice, the former results in fewer, more richly radially constrained regions being retained, whereas the latter results in a greater number of less richly populated regions. The latter also has a habit of returning RCRs that are centered on the boundaries of densely populated geographic regions.
-}
-
 \section{Manual seeding and raw radially constrained region outputs}{
 These functionalities were added to give the function greater exploratory utility. Now users can repeatedly sample the same regions using different radii (\code{r}) and site minima (\code{nSite}) to determine optimum values for data sampling.
 }
 
 \section{Subsampling procedures}{
 For explanations of how the subsampling procedures used when \code{rarefy = TRUE} and \code{weight = TRUE/FALSE}, see \code{\link[divvy:cookies]{divvy::cookies()}} documentation.
+}
+
+\section{Returning seeds}{
+This functionality was added to further empower users to explore their data.
 }
 
 \examples{
