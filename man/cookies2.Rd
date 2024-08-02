@@ -32,13 +32,13 @@ cookies2(
 
 \item{seeding}{Either \code{NULL} (the default) or a matrix generated using \code{\link[=defineSeeds]{defineSeeds()}} function, specifying the location of the centroids to be used to define radially constrained regions. If \code{NULL}, each unique populated site within \code{dat} will be assessed for viability as the center of a radially constrained region.}
 
-\item{rarefaction}{A character string specifying the subsampling method to be used, if any. Options are \code{"divvySites"} (the default, equivalent to \code{\link[divvy:cookies]{divvy::cookies()}} with \code{weight = FALSE}), \code{"weightedDivvySites"} (equivalent to \code{\link[divvy:cookies]{divvy::cookies()}} with \code{weight = TRUE}), \code{"sites"}, \code{"occs"}, \code{"sitesThenOcc"}, and \code{"none"}. See below for further details.}
+\item{rarefaction}{A character string specifying the subsampling method to be used, if any. Options are \code{"divvySites"} (the default, equivalent to \code{\link[divvy:cookies]{divvy::cookies()}} with \code{weight = FALSE}), \code{"weightedDivvySites"} (equivalent to \code{\link[divvy:cookies]{divvy::cookies()}} with \code{weight = TRUE}), \code{"sites"}, \code{"occs"}, \code{"sitesThenOccs"}, and \code{"none"}. See below for further details.}
 
-\item{iter}{A numeric value specifying the number of subsamples to be drawn from each radially constrained region if \code{rarefaction = "divvySites"}, \code{"weightedDivvySites"}, \code{"sites"}, \code{"occs"}, or \code{"sitesThenOcc"}. Default is \code{100}.}
+\item{iter}{A numeric value specifying the number of subsamples to be drawn from each radially constrained region if \code{rarefaction = "divvySites"}, \code{"weightedDivvySites"}, \code{"sites"}, \code{"occs"}, or \code{"sitesThenOccs"}. Default is \code{100}.}
 
-\item{nSite}{A numeric value specifying the minimum number of unique populated sites that must fall within a radially constrained region for it to be considered viable. Also, specifies the number of sites that are randomly drawn \emph{without} replacement from each radially constrained region if \code{rarefaction = "sites"} or \code{"sitesThenOcc"}. Default is \code{3}.}
+\item{nSite}{A numeric value specifying the minimum number of unique populated sites that must fall within a radially constrained region for it to be considered viable. Also, specifies the number of sites that are randomly drawn \emph{without} replacement from each radially constrained region if \code{rarefaction = "sites"} or \code{"sitesThenOccs"}. Default is \code{3}.}
 
-\item{nOcc}{A numeric value specifying the number of occurrences to be randomly drawn \emph{with} replacement from each radially constrained region if \code{rarefaction = "occs"} or \code{"sitesThenOcc"}. Default is \code{100}.}
+\item{nOcc}{A numeric value specifying the number of occurrences to be randomly drawn \emph{with} replacement from each radially constrained region if \code{rarefaction = "occs"} or \code{"sitesThenOccs"}. Default is \code{100}.}
 
 \item{oThreshold}{A numeric value between \code{0} and \code{1}, specifying the acceptable proportion of overlap in sites or area between viable radially constrained regions. Default is 0 (i.e., all subsamples returned will be spatially independent). Set to 1 to have function behave like \code{\link[divvy:cookies]{divvy::cookies()}}.}
 
@@ -55,11 +55,11 @@ Output format changes depending on arguments used.
 \itemize{
 \item \code{rarefaction = "none"}: a list of length \emph{n}, where \emph{n} is the number of radially constrained regions identified as viable. Each element is a data.frame or matrix (matching the class of \code{dat}) containing \emph{k} rows, where \emph{k} is the number of occurrences within dat that fall within a specific radially constrained region.
 \item \code{rarefaction = "divvySites"} or \code{"weightedDivvySites"}: a list of length iter. Each element is a data.frame or matrix (matching the class of \code{dat}) with \emph{l} rows, where \emph{l} is the number of occurrences associated with \code{nSite} sites within a viable radially constrained region. The radially constrained region of origin for each subsample is chosen at random. If \code{rarefaction = "weightedDivvySites"}, the first row in each returned subsample data.frame corresponds to the seed point (i.e., the centroid of the radially constrained region). If \code{rarefaction = "divvySites"}, rows are listed in the random order of which they were drawn.
-\item \code{rarefaction = "sites"}, \code{"occs"}, or \code{"sitesThenOcc"}: a list of length \emph{n}, where \emph{n} is the number of radially constrained regions identified as viable. Each element is a list of length \code{iter}, each element of which is a data.frame or matrix (matching the class of dat). The dimensions of these data.frames/matrices depend on the rarefaction method used:
+\item \code{rarefaction = "sites"}, \code{"occs"}, or \code{"sitesThenOccs"}: a list of length \emph{n}, where \emph{n} is the number of radially constrained regions identified as viable. Each element is a list of length \code{iter}, each element of which is a data.frame or matrix (matching the class of dat). The dimensions of these data.frames/matrices depend on the rarefaction method used:
 \itemize{
 \item if \code{rarefaction = "sites"}, each data.frame/matrix will have \emph{l} rows, where \emph{l} is the number of occurrences associated with \code{nSite} sites within a viable radially constrained region.
 \item if \code{rarefaction = "occs"}, each data.frame/matrix will have \code{nOcc} rows, where \code{nOcc} is a random sampling of the occurrences associated with a viable radially constrained region.
-\item if \code{rarefaction = "sitesThenOcc"}, each data.frame/matrix will have \code{nOcc} rows, where \code{nOcc} is a random sampling of the occurrences associated with \code{nSite} randomly selected sites within a viable radially constrained region.
+\item if \code{rarefaction = "sitesThenOccs"}, each data.frame/matrix will have \code{nOcc} rows, where \code{nOcc} is a random sampling of the occurrences associated with \code{nSite} randomly selected sites within a viable radially constrained region.
 }
 }
 
@@ -97,7 +97,7 @@ The three new subsampling procedures are described below. Each of them differ fr
 \enumerate{
 \item \code{rarefaction = "sites"}: draws \code{nSite} sites randomly \emph{without} replacement from each RCR. Each subsample contains all occurrences associated with the RCR.
 \item \code{rarefaction = "occs"}: draws \code{nOcc} occurrences randomly \emph{with} replacement from each RCR. Each subsample contains \code{nOcc} occurrences drawn from all sites within the RCR.
-\item \code{rarefaction = "sitesThenOcc"}: draws \code{nSite} sites randomly \emph{without} replacement from each RCR, then randomly draws \code{nOcc} occurrences \emph{with} replacement from the occurrences associated with selected sites. Each subsample contains \code{nOcc} occurrences drawn from \code{nSite} sites within the RCR.
+\item \code{rarefaction = "sitesThenOccs"}: draws \code{nSite} sites randomly \emph{without} replacement from each RCR, then randomly draws \code{nOcc} occurrences \emph{with} replacement from the occurrences associated with selected sites. Each subsample contains \code{nOcc} occurrences drawn from \code{nSite} sites within the RCR.
 }
 }
 

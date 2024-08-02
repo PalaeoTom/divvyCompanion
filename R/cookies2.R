@@ -142,7 +142,7 @@ cookies2 <- function(dat, xy, uniqID = "cell", r, seeding = NULL, rarefaction = 
           return(rareSubs)
         }
         ## rarefy by sites, then occurrences
-        if(rarefaction == "sitesThenOccss"){
+        if(rarefaction == "sitesThenOccs"){
           rareSubs <- lapply(1:length(subsamples), function(x){
             ## Get list of unique cells
             cells <- unique(subsamples[[x]][,uniqID])
