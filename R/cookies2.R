@@ -5,10 +5,10 @@
 #' @param uniqID A character string specifying the name of the column in `dat` containing unique site identifiers (e.g., cell numbers added via [rasterOccData()]). Default is `"cell"`.
 #' @param r A numeric value specifying the radius (in metres) to use to define radially constrained regions.
 #' @param seeding Either `NULL` (the default) or a matrix generated using [defineSeeds()] function, specifying the location of the centroids to be used to define radially constrained regions. If `NULL`, each unique populated site within `dat` will be assessed for viability as the center of a radially constrained region.
-#' @param rarefaction A character string specifying the subsampling method to be used, if any. Options are `"divvySites"` (the default, equivalent to [divvy::cookies()] with `weight = FALSE`), `"weightedDivvySites"` (equivalent to [divvy::cookies()] with `weight = TRUE`), `"sites"`, `"occs"`, `"sitesThenOcc"`, and `"none"`. See below for further details.
-#' @param iter A numeric value specifying the number of subsamples to be drawn from each radially constrained region if `rarefaction = "divvySites"`, `"weightedDivvySites"`, `"sites"`, `"occs"`, or `"sitesThenOcc"`. Default is `100`.
-#' @param nSite A numeric value specifying the minimum number of unique populated sites that must fall within a radially constrained region for it to be considered viable. Also, specifies the number of sites that are randomly drawn *without* replacement from each radially constrained region if `rarefaction = "sites"` or `"sitesThenOcc"`. Default is `3`.
-#' @param nOcc A numeric value specifying the number of occurrences to be randomly drawn *with* replacement from each radially constrained region if `rarefaction = "occs"` or `"sitesThenOcc"`. Default is `100`.
+#' @param rarefaction A character string specifying the subsampling method to be used, if any. Options are `"divvySites"` (the default, equivalent to [divvy::cookies()] with `weight = FALSE`), `"weightedDivvySites"` (equivalent to [divvy::cookies()] with `weight = TRUE`), `"sites"`, `"occs"`, `"sitesThenOccs"`, and `"none"`. See below for further details.
+#' @param iter A numeric value specifying the number of subsamples to be drawn from each radially constrained region if `rarefaction = "divvySites"`, `"weightedDivvySites"`, `"sites"`, `"occs"`, or `"sitesThenOccs"`. Default is `100`.
+#' @param nSite A numeric value specifying the minimum number of unique populated sites that must fall within a radially constrained region for it to be considered viable. Also, specifies the number of sites that are randomly drawn *without* replacement from each radially constrained region if `rarefaction = "sites"` or `"sitesThenOccs"`. Default is `3`.
+#' @param nOcc A numeric value specifying the number of occurrences to be randomly drawn *with* replacement from each radially constrained region if `rarefaction = "occs"` or `"sitesThenOccs"`. Default is `100`.
 #' @param oThreshold A numeric value between `0` and `1`, specifying the acceptable proportion of overlap in sites or area between viable radially constrained regions. Default is 0 (i.e., all subsamples returned will be spatially independent). Set to 1 to have function behave like [divvy::cookies()].
 #' @param oType A character string, either `"sites"` (the default) or `"area"`. If `oThreshold < 1`, `oType` specifies whether the degree of overlap between radially constrained regions should be quantified using sites (`oType = "sites"`) or area (`oType = "area"`).
 #' @param oPruningMode A character string, either `"maxOccs"` (the default) or `"minOverlap"`. If `oThreshold < 1`, `oPruningMode` specifies whether the overlapping radially constrained regions with the least associated occurrence data (`oPruningMode = "maxOccs"`) or the most overlap with other regions (`oPruningMode = "minOverlap"`) should be dropped.
@@ -18,10 +18,10 @@
 #' @return Output format changes depending on arguments used.
 #' - `rarefaction = "none"`: a list of length *n*, where *n* is the number of radially constrained regions identified as viable. Each element is a data.frame or matrix (matching the class of `dat`) containing *k* rows, where *k* is the number of occurrences within dat that fall within a specific radially constrained region.
 #' - `rarefaction = "divvySites"` or `"weightedDivvySites"`: a list of length iter. Each element is a data.frame or matrix (matching the class of `dat`) with *l* rows, where *l* is the number of occurrences associated with `nSite` sites within a viable radially constrained region. The radially constrained region of origin for each subsample is chosen at random. If `rarefaction = "weightedDivvySites"`, the first row in each returned subsample data.frame corresponds to the seed point (i.e., the centroid of the radially constrained region). If `rarefaction = "divvySites"`, rows are listed in the random order of which they were drawn.
-#' - `rarefaction = "sites"`, `"occs"`, or `"sitesThenOcc"`: a list of length *n*, where *n* is the number of radially constrained regions identified as viable. Each element is a list of length `iter`, each element of which is a data.frame or matrix (matching the class of dat). The dimensions of these data.frames/matrices depend on the rarefaction method used:
+#' - `rarefaction = "sites"`, `"occs"`, or `"sitesThenOccs"`: a list of length *n*, where *n* is the number of radially constrained regions identified as viable. Each element is a list of length `iter`, each element of which is a data.frame or matrix (matching the class of dat). The dimensions of these data.frames/matrices depend on the rarefaction method used:
 #'    + if `rarefaction = "sites"`, each data.frame/matrix will have *l* rows, where *l* is the number of occurrences associated with `nSite` sites within a viable radially constrained region.
 #'    + if `rarefaction = "occs"`, each data.frame/matrix will have `nOcc` rows, where `nOcc` is a random sampling of the occurrences associated with a viable radially constrained region.
-#'    + if `rarefaction = "sitesThenOcc"`, each data.frame/matrix will have `nOcc` rows, where `nOcc` is a random sampling of the occurrences associated with `nSite` randomly selected sites within a viable radially constrained region.
+#'    + if `rarefaction = "sitesThenOccs"`, each data.frame/matrix will have `nOcc` rows, where `nOcc` is a random sampling of the occurrences associated with `nSite` randomly selected sites within a viable radially constrained region.
 #'
 #' If `output = 'locs'` (default), only the coordinates of the `dat` rows associated with radially constrained regions/subsamples are returned. If `output = 'full'`, all `dat` columns are returned for the rows associated with the radially constrained region/subsample. If `output = 'seeds'`, only the coordinates of the viable seeds are returned.
 #'
@@ -53,7 +53,7 @@
 #' The three new subsampling procedures are described below. Each of them differ from the two subsampling procedures offered by [divvy::cookies()] in that they draw the `iter` subsamples from each viable RCR, rather than randomly drawing `iter` subsamples from `iter` randomly selected viable RCRs. When used in conjunction with a low threshold for overlap (i.e., `oThreshold = 0`), this limits oversampling of occurrence-rich geographic areas.
 #' 1. `rarefaction = "sites"`: draws `nSite` sites randomly *without* replacement from each RCR. Each subsample contains all occurrences associated with the RCR.
 #' 2. `rarefaction = "occs"`: draws `nOcc` occurrences randomly *with* replacement from each RCR. Each subsample contains `nOcc` occurrences drawn from all sites within the RCR.
-#' 3. `rarefaction = "sitesThenOcc"`: draws `nSite` sites randomly *without* replacement from each RCR, then randomly draws `nOcc` occurrences *with* replacement from the occurrences associated with selected sites. Each subsample contains `nOcc` occurrences drawn from `nSite` sites within the RCR.
+#' 3. `rarefaction = "sitesThenOccs"`: draws `nSite` sites randomly *without* replacement from each RCR, then randomly draws `nOcc` occurrences *with* replacement from the occurrences associated with selected sites. Each subsample contains `nOcc` occurrences drawn from `nSite` sites within the RCR.
 #'
 #' @examples
 #' # Two examples, first with non-rasterised data
@@ -110,7 +110,7 @@ cookies2 <- function(dat, xy, uniqID = "cell", r, seeding = NULL, rarefaction = 
     } else {
       ## get sites subsamples if rarefying not by divvy
       subsamples <- cookie2(dat, seeds, xy, nSite, allPools, weight, coords, crs, output, divvyRarefaction = F)
-      if(rarefaction == "sites" || rarefaction == "occs" || rarefaction == "sitesThenOcc"){
+      if(rarefaction == "sites" || rarefaction == "occs" || rarefaction == "sitesThenOccs"){
         ## rarefy by sites
         if(rarefaction == "sites"){
           rareSubs <- lapply(1:length(subsamples), function(x){
@@ -142,7 +142,7 @@ cookies2 <- function(dat, xy, uniqID = "cell", r, seeding = NULL, rarefaction = 
           return(rareSubs)
         }
         ## rarefy by sites, then occurrences
-        if(rarefaction == "sitesThenOcc"){
+        if(rarefaction == "sitesThenOccss"){
           rareSubs <- lapply(1:length(subsamples), function(x){
             ## Get list of unique cells
             cells <- unique(subsamples[[x]][,uniqID])
@@ -164,7 +164,7 @@ cookies2 <- function(dat, xy, uniqID = "cell", r, seeding = NULL, rarefaction = 
         if(rarefaction == "none"){
           return(subsamples)
         } else {
-          stop("argument rarefaction is not 'divvySites', 'weightedDivvySites', 'sites', 'occs', 'sitesThenOcc', or 'none'")
+          stop("argument rarefaction is not 'divvySites', 'weightedDivvySites', 'sites', 'occs', 'sitesThenOccss', or 'none'")
         }
       }
     }
