@@ -43,7 +43,7 @@ If \code{xyCoords1} and \code{xyCoords2} are null, a rasterised version of \code
 If \code{xyCoords1} and \code{xyCoords2} are numeric vectors, a seed matrix will be returned with \emph{l} rows and at least \emph{c} columns, where \emph{l} is the length of vector \code{xyCoords1} (this should match length of \code{xyCoords2}) and \emph{c} is the number of columns in \code{occData}. If not already present in \code{occData}, columns named \code{xyCoords}, \code{xyCell}, \code{uniqID}, and \code{"id"} (a column denoting the rows as manually defined seed points) will be added.
 }
 \description{
-This is a wrapper function that employs \link{terra} functions to rasterise occurrence data and define rasterised seed points for use with \code{\link[=cookies2]{cookies2()}} (via argument \code{seeding}).
+This is a wrapper function that employs terra functions to rasterise occurrence data and define rasterised seed points for use with \code{\link[=cookies2]{cookies2()}} (via argument \code{seeding}).
 
 If defining a seed matrix, it is \emph{highly recommended} that you first rasterise your occurrence data using this function, then submit the rasterised occurrence data as \code{occData}, \emph{keeping all other arguments the same}, when defining your seed points \strong{as this will ensure the coordinates of your seeds are assigned to the same columns as the coordinates of your occurrences} .
 

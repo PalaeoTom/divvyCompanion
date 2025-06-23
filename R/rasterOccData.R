@@ -18,7 +18,7 @@
 #'
 #' @export
 #'
-#' @description This is a wrapper function that employs [terra] functions to rasterise occurrence data and define rasterised seed points for use with [cookies2()] (via argument `seeding`).
+#' @description This is a wrapper function that employs terra functions to rasterise occurrence data and define rasterised seed points for use with [cookies2()] (via argument `seeding`).
 #'
 #' If defining a seed matrix, it is *highly recommended* that you first rasterise your occurrence data using this function, then submit the rasterised occurrence data as `occData`, *keeping all other arguments the same*, when defining your seed points **as this will ensure the coordinates of your seeds are assigned to the same columns as the coordinates of your occurrences** .
 #'
