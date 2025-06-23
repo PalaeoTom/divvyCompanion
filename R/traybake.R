@@ -64,9 +64,11 @@ traybake <- function(dat, xy, uniqID = "cell", r, standardiseCells = T, exhaustC
   coords$id <- paste0("loc", 1:nrow(coords))
   ## Find clusters
   clusters <- findClusters(coords, "id", xy, r, nSite, crs)
-  ## If no clusters, return NULL
-  if (length(clusters) < 1) {
-    return(NULL)
+  ## If length of clusters is 1, check first element isn't length 0. If so, return NULL
+  if(length(clusters)==1){
+    if(length(clusters[[1]])==0){
+      return(NULL)
+    }
   }
   ## Get clusters and seeds
   if(output == "seeds"){
@@ -144,23 +146,23 @@ traybake <- function(dat, xy, uniqID = "cell", r, standardiseCells = T, exhaustC
     if(standardiseCells){
       subsamples <- parallel::mclapply(1:length(raw), mc.cores = n.cores, function(y){
         rareSubs <- lapply(1:length(raw[[y]]), function(x){
-        ## Get list of unique cells
-        cells <- unique(raw[[y]][[x]][,uniqID])
-        ## Get nCookie samples
-        sub2samples <- lapply(1:nCookie, function(all){
-          ## Get sample of cells
-          samp <- sample(cells, size = nSite, replace = F)
-          ## extract data frame
-          s2sample <- raw[[y]][[x]][which(raw[[y]][[x]][,uniqID] %in% samp),]
+          ## Get list of unique cells
+          cells <- unique(raw[[y]][[x]][,uniqID])
+          ## Get nCookie samples
+          sub2samples <- lapply(1:nCookie, function(all){
+            ## Get sample of cells
+            samp <- sample(cells, size = nSite, replace = F)
+            ## extract data frame
+            s2sample <- raw[[y]][[x]][which(raw[[y]][[x]][,uniqID] %in% samp),]
           })
         })
         names(rareSubs) <- names(raw[[y]])
         return(rareSubs)
-        })
-    ## prepare output
-    return(subsamples)
+      })
+      ## prepare output
+      return(subsamples)
     } else {
-    return(raw)
+      return(raw)
     }
   }
 }
