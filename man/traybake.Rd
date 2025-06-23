@@ -51,6 +51,8 @@ Output format changes depending on arguments used.
 \item \code{standardiseCells = TRUE}: a list of length \emph{n}, where \emph{n} is the number of radially constrained regions sampled. If \code{exhaustClusters = TRUE}, then clusters may be represented by more than one radially constrained regions. Otherwise, each cluster will be represented by a single radially constrained region. Each element of this list is a list of length \code{nCookie}, each element of which is a data.frame or matrix (matching the class of dat) containing all occurrences associated with the \code{nSite} grid cells sampled \emph{without replacement} from the radially constrained region.
 If \code{output = 'full'}, all \code{dat} columns are returned for the rows associated with the radially constrained region/subsample. If \code{output = 'seeds'}, only the coordinates of the viable seeds are returned.
 }
+
+If no viable clusters are present in the data, output is \code{NULL}.
 }
 \description{
 This function is a modified version of \code{\link[divvy:cookies]{divvy::cookies()}}.

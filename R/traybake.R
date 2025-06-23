@@ -19,6 +19,8 @@
 #
 #' If `output = 'full'`, all `dat` columns are returned for the rows associated with the radially constrained region/subsample. If `output = 'seeds'`, only the coordinates of the viable seeds are returned.
 #'
+#' If no viable clusters are present in the data, output is `NULL`.
+#'
 #' @export
 #'
 #' @description This function is a modified version of [divvy::cookies()].
@@ -62,9 +64,9 @@ traybake <- function(dat, xy, uniqID = "cell", r, standardiseCells = T, exhaustC
   coords$id <- paste0("loc", 1:nrow(coords))
   ## Find clusters
   clusters <- findClusters(coords, "id", xy, r, nSite, crs)
-  ## If no clusters, stop
+  ## If no clusters, return NULL
   if (length(clusters) < 1) {
-    stop("not enough close sites for any subsample. Please adjust nSite or r.")
+    return(NULL)
   }
   ## Get clusters and seeds
   if(output == "seeds"){
