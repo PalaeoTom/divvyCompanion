@@ -45,7 +45,7 @@ findClusters <- function(dat, siteId, xy, r, nSite, crs = "EPSG:4326"){
     names(tracker) <- names(posPools)
     ## For each RCR
     for(i in 1:length(posPools)){
-    #for(i in 1:57){
+      #for(i in 1:57){
       ## Isolate relevant data
       sub <- index[which(index[,1]==i),]
       ## Get overlapping RCRs
@@ -78,7 +78,7 @@ findClusters <- function(dat, siteId, xy, r, nSite, crs = "EPSG:4326"){
         if(length(ov) > 0){
           ## If any of overlapping RCRs have already been assigned to a cluster
           if(any(!is.na(tracker[ov]))){
-          ## Add all unassigned RCRs present in ov to this cluster, as the already assigned RCR forms a bridge.
+            ## Add all unassigned RCRs present in ov to this cluster, as the already assigned RCR forms a bridge.
             # Get cluster id
             c <- unique(tracker[ov])
             c <- c[!is.na(c)]
@@ -118,27 +118,59 @@ findClusters <- function(dat, siteId, xy, r, nSite, crs = "EPSG:4326"){
     ## Just one viable RCR. Therefore there can only be one cluster.
     clusters <- list(posPools)
   }
-  ## Now to remove duplicated clusters
-  for(c in 1:length(clusters)){
-    ## Initialise keeper vector
-    keepers <- rep(T, length(clusters[[c]]))
-    ## Get unique cells
-    unique_cells <- unique(unlist(clusters[[c]]))
-    ## Create comparison
-    comparison <- data.frame(matrix(0, ncol = length(unique_cells), nrow = length(clusters[[c]])))
-    colnames(comparison) <- unique_cells
-    ## Population comparison matrix
-    for(u in 1:ncol(comparison)){
-      bool <- sapply(1:nrow(comparison), function(r) any(clusters[[c]][[r]]==unique_cells[u]))
-      if(any(bool)){
-        comparison[which(bool),u] <- 1
+  if(length(clusters)>1){
+    ## Now to remove duplicated RCRs from clusters
+    for(c in 1:length(clusters)){
+      ## Initialise keeper vector
+      keepers <- rep(T, length(clusters[[c]]))
+      ## Get unique cells
+      unique_cells <- unique(unlist(clusters[[c]]))
+      ## Create comparison
+      comparison <- data.frame(matrix(0, ncol = length(unique_cells), nrow = length(clusters[[c]])))
+      colnames(comparison) <- unique_cells
+      ## Population comparison matrix
+      for(u in 1:ncol(comparison)){
+        bool <- sapply(1:nrow(comparison), function(r) any(clusters[[c]][[r]]==unique_cells[u]))
+        if(any(bool)){
+          comparison[which(bool),u] <- 1
+        }
       }
+      keepers[which(duplicated(comparison))] <- F
+      ## Drop repeats
+      clusters[[c]] <- clusters[[c]][keepers]
     }
-    keepers[which(duplicated(comparison))] <- F
-    ## Drop repeats
-    clusters[[c]] <- clusters[[c]][keepers]
+    ## Name clusters
+    names(clusters) <- paste0("clus",seq(1:length(clusters)))
+    return(clusters)
+  } else {
+    if(length(clusters[[1]])==0){
+      ## Name clusters
+      names(clusters) <- paste0("clus",seq(1:length(clusters)))
+      return(clusters)
+    } else {
+      ## Now to remove duplicated RCRs from clusters
+      for(c in 1:length(clusters)){
+        ## Initialise keeper vector
+        keepers <- rep(T, length(clusters[[c]]))
+        ## Get unique cells
+        unique_cells <- unique(unlist(clusters[[c]]))
+        ## Create comparison
+        comparison <- data.frame(matrix(0, ncol = length(unique_cells), nrow = length(clusters[[c]])))
+        colnames(comparison) <- unique_cells
+        ## Population comparison matrix
+        for(u in 1:ncol(comparison)){
+          bool <- sapply(1:nrow(comparison), function(r) any(clusters[[c]][[r]]==unique_cells[u]))
+          if(any(bool)){
+            comparison[which(bool),u] <- 1
+          }
+        }
+        keepers[which(duplicated(comparison))] <- F
+        ## Drop repeats
+        clusters[[c]] <- clusters[[c]][keepers]
+      }
+      ## Name clusters
+      names(clusters) <- paste0("clus",seq(1:length(clusters)))
+      return(clusters)
+    }
   }
-  ## Name clusters
-  names(clusters) <- paste0("clus",seq(1:length(clusters)))
-  return(clusters)
 }
