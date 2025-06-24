@@ -118,6 +118,26 @@ findClusters <- function(dat, siteId, xy, r, nSite, crs = "EPSG:4326"){
     ## Just one viable RCR. Therefore there can only be one cluster.
     clusters <- list(posPools)
   }
+  ## Now to remove duplicated clusters
+  for(c in 1:length(clusters)){
+    ## Initialise keeper vector
+    keepers <- rep(T, length(clusters[[c]]))
+    ## Get unique cells
+    unique_cells <- unique(unlist(clusters[[c]]))
+    ## Create comparison
+    comparison <- data.frame(matrix(0, ncol = length(unique_cells), nrow = length(clusters[[c]])))
+    colnames(comparison) <- unique_cells
+    ## Population comparison matrix
+    for(u in 1:ncol(comparison)){
+      bool <- sapply(1:nrow(comparison), function(r) any(clusters[[c]][[r]]==unique_cells[u]))
+      if(any(bool)){
+        comparison[which(bool),u] <- 1
+      }
+    }
+    keepers[which(duplicated(comparison))] <- F
+    ## Drop repeats
+    clusters[[c]] <- clusters[[c]][keepers]
+  }
   ## Name clusters
   names(clusters) <- paste0("clus",seq(1:length(clusters)))
   return(clusters)
