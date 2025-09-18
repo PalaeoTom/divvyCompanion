@@ -78,12 +78,15 @@ findSeeds2 <- function(dat, rawData, siteId, xy, uniqID, r, nSite, crs = "EPSG:4
             max.o <- max.o[sample(which(ta == max(ta)),1)]
           }
           overlap <- overlap[-max.o,-max.o]
+          keepers <- keepers[-max.o]
+          if(length(keepers) == 1){
+            break
+          }
           if(oThreshold > 0) {
             OCs <- apply(overlap >= oThreshold, 1, function(x) length(which(x)))
           } else {
             OCs <- apply(overlap > oThreshold, 1, function(x) length(which(x)))
           }
-          keepers <- keepers[-max.o]
           if(sum(OCs) == 0){
             break
           }
